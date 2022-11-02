@@ -3,6 +3,7 @@ import gzip
 import os
 import logging
 
+
 class Downloader:
     def __init__(self, data_path):
         self.data_path = data_path
@@ -12,7 +13,7 @@ class Downloader:
 
         if os.path.isfile(f'{path}.json'):
             return
-        logging.info(f'Downloading {date_to_download} ...')   
+        logging.info(f'Downloading {date_to_download} ...')
         # download compressed file
         with open(f'{path}.json.gz', 'wb') as f:
             response = requests.get(f'https://data.gharchive.org/{date_to_download}.json.gz')
