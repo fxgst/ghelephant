@@ -43,4 +43,4 @@ class DatabaseLink:
         # # insert payload
 
     def create_tables(self):
-        self.cursor.execute(open('database/create_tables.sql', 'r').read())
+        self.cursor.execute(open('sql/create_tables.sql', 'r').read())

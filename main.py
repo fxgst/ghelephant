@@ -5,6 +5,7 @@ from reader import Reader
 from database_link import DatabaseLink
 from variables import data_path
 import logging
+import os
 
 date_to_download = '2022-11-01-'
 
@@ -12,8 +13,12 @@ date_to_download = '2022-11-01-'
 def main():
     logging.basicConfig(level=logging.INFO)
 
-    # downloader = Downloader(data_path)
-    # downloader.download_json(date_to_download)
+    for h in range(0, 24):
+        downloader = Downloader(data_path)
+        downloader.download_json(date_to_download + str(h))
+
+    # run preprocessing script
+    os.system('bash preprocess.sh')
 
     with DatabaseLink() as db:
         db.create_tables()
