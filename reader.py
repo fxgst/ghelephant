@@ -4,4 +4,5 @@ class Reader:
 
     def read_lines(self, file_name):
         with open(f'{self.data_path}/{file_name}', 'r') as f:
-            return f.readlines()
+            for l in f:
+                yield l
