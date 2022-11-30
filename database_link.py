@@ -25,6 +25,10 @@ class DatabaseLink:
         with open('sql/create_tables.sql', 'r') as f:
             self.cursor.execute(f.read())
 
+    def add_primary_keys(self):
+        with open('sql/primary_keys.sql', 'r') as f:
+            self.cursor.execute(f.read())
+
     def insert_csvs_into_db(self):
         for table in self.tables:
             query = f"COPY {table} FROM '{data_path}/{table}.csv' WITH (FORMAT csv)"

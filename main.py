@@ -10,14 +10,14 @@ from csv_writers import CSVWriters
 
 def copy_insert():
     with CSVWriters() as writers:
-        inserter = JSONToCSVConverter(writers)
+        converter = JSONToCSVConverter(writers)
         for d in range(21, 27):
             for h in range(0, 24):
                 date_to_download = f'2022-11-{str(d).zfill(2)}-{h}'
                 FileManager.download_json(date_to_download)
                 file_name = f'{data_path}/{date_to_download}.json'
                 with open(file_name, 'rb') as f:
-                    inserter.write_events(f)
+                    converter.write_events(f)
                     logging.info(f'Finished writing csv for {file_name}')
                 # FileManager.remove_json(date_to_download)
 
@@ -25,7 +25,8 @@ def copy_insert():
     with DatabaseLink() as db:
         db.create_tables()
         db.insert_csvs_into_db()
-    FileManager.remove_csvs()
+        db.add_primary_keys()
+    # FileManager.remove_csvs()
 
 
 def main():
