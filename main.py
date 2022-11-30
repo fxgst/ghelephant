@@ -18,7 +18,7 @@ def copy_insert():
                 file_name = f'{data_path}/{date_to_download}.json'
                 with open(file_name, 'rb') as f:
                     converter.write_events(f)
-                    logging.info(f'Finished writing csv for {file_name}')
+                    logging.info(f'Finished writing csv for {date_to_download}')
                 # FileManager.remove_json(date_to_download)
 
     logging.info('Inserting csvs into database...')

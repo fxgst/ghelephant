@@ -78,3 +78,14 @@ CREATE TABLE IF NOT EXISTS gollumevent (
     action VARCHAR(63),
     sha VARCHAR(40)
 ) WITHOUT OIDS;
+
+
+CREATE TABLE IF NOT EXISTS memberevent (
+    event_id BIGINT,
+    member_id BIGINT,
+    login VARCHAR(255),
+    node_id VARCHAR(255),
+    type VARCHAR(4),
+    site_admin BOOLEAN,
+    action VARCHAR(5)
+) WITHOUT OIDS;

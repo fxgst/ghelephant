@@ -3,7 +3,7 @@ import csv
 
 
 class CSVWriters:
-    def __enter__(self):
+    def __init__(self):
         escapechar = '\\'
         mode = 'a'
         self.archive_f = open(f'{data_path}/archive.csv', mode)
@@ -13,6 +13,7 @@ class CSVWriters:
         self.releaseevent_f = open(f'{data_path}/releaseevent.csv', mode)
         self.deleteevent_f = open(f'{data_path}/deleteevent.csv', mode)
         self.gollumevent_f = open(f'{data_path}/gollumevent.csv', mode)
+        self.memberevent_f = open(f'{data_path}/memberevent.csv', mode)
 
         self.archive = csv.writer(self.archive_f, escapechar=escapechar)
         self.commit = csv.writer(self.commit_f, escapechar=escapechar)
@@ -21,6 +22,10 @@ class CSVWriters:
         self.releaseevent = csv.writer(self.releaseevent_f, escapechar=escapechar)
         self.deleteevent = csv.writer(self.deleteevent_f, escapechar=escapechar)
         self.gollumevent = csv.writer(self.gollumevent_f, escapechar=escapechar)
+        self.memberevent = csv.writer(self.memberevent_f, escapechar=escapechar)
+
+    def __enter__(self):
+        self.__init__()
         return self
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
@@ -34,3 +39,4 @@ class CSVWriters:
         self.releaseevent_f.close()
         self.deleteevent_f.close()
         self.gollumevent_f.close()
+        self.memberevent_f.close()

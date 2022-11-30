@@ -143,3 +143,22 @@ class GollumEventPayload(msgspec.Struct):
 
 class GollumEvent(msgspec.Struct):
     payload: GollumEventPayload
+
+
+# MemberEvent
+
+class Member(msgspec.Struct):
+    id: int
+    login: str
+    node_id: str
+    type: str
+    site_admin: bool
+
+
+class MemberEventPayload(msgspec.Struct):
+    action: str
+    member: Member
+
+
+class MemberEvent(msgspec.Struct):
+    payload: MemberEventPayload

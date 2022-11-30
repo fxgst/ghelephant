@@ -9,8 +9,6 @@ class DatabaseLink:
     def __init__(self):
         self.conn = psycopg2.connect(database=database_name, user=database_user)
         self.cursor = self.conn.cursor()
-        self.tables = ['archive', 'pushevent', 'commit', 'commitcommentevent', 'releaseevent', 'deleteevent',
-                       'gollumevent']
 
     def __enter__(self):
         self.__init__()
@@ -29,8 +27,12 @@ class DatabaseLink:
         with open('sql/primary_keys.sql', 'r') as f:
             self.cursor.execute(f.read())
 
+    def get_csv_files(self):
+        files = os.listdir(data_path)
+        return [f.removesuffix('.csv') for f in files if f.endswith('.csv')]
+
     def insert_csvs_into_db(self):
-        for table in self.tables:
+        for table in self.get_csv_files():
             query = f"COPY {table} FROM '{data_path}/{table}.csv' WITH (FORMAT csv)"
             try:
                 self.cursor.execute(query)
