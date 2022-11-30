@@ -1,3 +1,5 @@
 # ghelephant
 
-Fill out `variables.py` with your database information and a path where to store the `.json` files.
+## installation
+* `pip install psycopg2 orjson msgspec`
+* complete `variables.py` with your database information and a path where to temporarily store the `.json` and `.csv` files.
