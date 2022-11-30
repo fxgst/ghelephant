@@ -124,33 +124,33 @@ class DatabaseLink:
     #     Inserter.insert_push_event(self.cursor, event['payload'])
 
 
-    # def parse_entry_generic(self, json_data):
-    #     event = json.loads(json_data)
+    def parse_entry_generic(self, json_data):
+        event = json.loads(json_data)
 
-    #     id = event['id']
-    #     type = event['type']
-    #     actor_id = event['actor']['id']
-    #     actor_login = event['actor']['login']
-    #     repo_id = event['repo']['id']
-    #     repo_name = event['repo']['name']
-    #     public = event['public']
-    #     created_at = event['created_at']
-    #     org_id = event['org']['id'] if 'org' in event else None
-    #     org_login = event['org']['login'] if 'org' in event else None
+        id = event['id']
+        type = event['type']
+        actor_id = event['actor']['id']
+        actor_login = event['actor']['login']
+        repo_id = event['repo']['id']
+        repo_name = event['repo']['name']
+        public = event['public']
+        created_at = event['created_at']
+        org_id = event['org']['id'] if 'org' in event else None
+        org_login = event['org']['login'] if 'org' in event else None
 
-    #     payload = json.dumps(event['payload'])
-    #     query = 'INSERT INTO archive ' \
-    #             '(id, type, actor_id, actor_login, repo_id, repo_name, ' \
-    #             'payload, public, created_at, org_id, org_login)' \
-    #             ' VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING'
-    #     data = (id, type, actor_id, actor_login, repo_id, repo_name,
-    #             payload, public, created_at, org_id, org_login)
-    #     self.cursor.execute(query, data)
+        payload = json.dumps(event['payload'])
+        query = 'INSERT INTO archive ' \
+                '(id, type, actor_id, actor_login, repo_id, repo_name, ' \
+                'payload, public, created_at, org_id, org_login)' \
+                ' VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING'
+        data = (id, type, actor_id, actor_login, repo_id, repo_name,
+                payload, public, created_at, org_id, org_login)
+        self.cursor.execute(query, data)
 
-    #     # payload = entry['payload']
-    #     # Inserter.insert_actor(self.cursor, entry['actor'])
-    #     # Inserter.insert_repo(self.cursor, entry['repo'])
-    #     # # insert payload
+        # payload = entry['payload']
+        # Inserter.insert_actor(self.cursor, entry['actor'])
+        # Inserter.insert_repo(self.cursor, entry['repo'])
+        # # insert payload
 
     def create_tables(self):
         self.cursor.execute(open('sql/create_tables.sql', 'r').read())

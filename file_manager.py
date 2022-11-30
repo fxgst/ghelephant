@@ -2,15 +2,13 @@ import requests
 import gzip
 import os
 import logging
+from variables import data_path
 
 
-class Downloader:
-    def __init__(self, data_path):
-        self.data_path = data_path
-
-    def download_json(self, date_to_download):
-        path = f'{self.data_path}/{date_to_download}'
-
+class FileManager:
+    @staticmethod
+    def download_json(date_to_download):
+        path = f'{data_path}/{date_to_download}'
         if os.path.isfile(f'{path}.json'):
             return
         logging.info(f'Downloading {date_to_download} ...')
@@ -21,5 +19,14 @@ class Downloader:
         # decompress file, delete compressed file
         with gzip.open(f'{path}.json.gz', 'rb') as compressed, open(f'{path}.json', 'wb') as uncompressed:
             uncompressed.write(compressed.read())
-            os.remove(f'{path}.json.gz')
+        os.remove(f'{path}.json.gz')
         logging.info('Done')
+
+    @staticmethod
+    def remove_json(date_to_download):
+        path = f'{data_path}/{date_to_download}'
+        os.remove(f'{path}.json')
+
+    @staticmethod
+    def remove_csvs():
+        os.system(f'rm {data_path}/*.csv')
