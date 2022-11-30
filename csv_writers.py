@@ -1,6 +1,7 @@
 from variables import data_path
 import csv
 
+
 class CSVWriters:
     def __enter__(self):
         escapechar = '\\'

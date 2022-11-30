@@ -2,19 +2,23 @@ import msgspec
 from typing import Optional
 from datetime import datetime
 
+
 # common properties
 
 class Actor(msgspec.Struct):
     id: int
     login: str
 
+
 class Repo(msgspec.Struct):
     id: int
     name: str
 
+
 class Org(msgspec.Struct):
     id: int
     login: str
+
 
 class GenericEvent(msgspec.Struct):
     id: str
@@ -25,17 +29,20 @@ class GenericEvent(msgspec.Struct):
     created_at: datetime
     org: Optional[Org] = None
 
+
 # PushEvent
 
 class Author(msgspec.Struct):
     email: str
     name: str
 
+
 class Commit(msgspec.Struct):
     sha: str
     author: Author
     message: str
     distinct: bool
+
 
 class PushEventPayload(msgspec.Struct):
     push_id: int
@@ -45,6 +52,7 @@ class PushEventPayload(msgspec.Struct):
     head: str
     before: str
     commits: list[Commit]
+
 
 class PushEvent(msgspec.Struct):
     payload: PushEventPayload
@@ -63,6 +71,7 @@ class Reactions(msgspec.Struct):
     rocket: int
     eyes: int
 
+
 class Comment(msgspec.Struct):
     id: int
     node_id: str
@@ -74,11 +83,14 @@ class Comment(msgspec.Struct):
     line: Optional[int] = None
     path: Optional[str] = None
 
+
 class CommitCommentEventPayload(msgspec.Struct):
     comment: Comment
 
+
 class CommitCommentEvent(msgspec.Struct):
     payload: CommitCommentEventPayload
+
 
 # ReleaseEvent
 
@@ -94,8 +106,10 @@ class Release(msgspec.Struct):
     body: Optional[str] = None
     name: Optional[str] = None
 
+
 class ReleaseEventPayload(msgspec.Struct):
     release: Release
+
 
 class ReleaseEvent(msgspec.Struct):
     payload: ReleaseEventPayload
@@ -108,8 +122,10 @@ class DeleteEventPayload(msgspec.Struct):
     ref_type: str
     pusher_type: str
 
+
 class DeleteEvent(msgspec.Struct):
     payload: DeleteEventPayload
+
 
 # GollumEvent
 
@@ -120,8 +136,10 @@ class Page(msgspec.Struct):
     sha: str
     summary: Optional[str] = None
 
+
 class GollumEventPayload(msgspec.Struct):
     pages: list[Page]
+
 
 class GollumEvent(msgspec.Struct):
     payload: GollumEventPayload

@@ -1,17 +1,3 @@
--- CREATE TABLE IF NOT EXISTS archive (
---     id BIGINT,
---     type VARCHAR(29),
---     actor_id BIGINT,
---     actor_login VARCHAR(255),
---     repo_id BIGINT,
---     repo_name VARCHAR(255),
---     payload JSONB,
---     public BOOLEAN,
---     created_at TIMESTAMP,
---     org_id BIGINT,
---     org_login VARCHAR(255)
--- ) WITHOUT OIDS;
-
 CREATE TABLE IF NOT EXISTS archive (
     id BIGINT,
     type VARCHAR(29),
