@@ -47,8 +47,18 @@ class JSONToCSVConverter:
                     self.write_member_event(line, generic_event)
                 case 'ForkEvent':
                     self.write_fork_event(line, generic_event)
+                case 'CreateEvent':
+                    self.write_create_event(line, generic_event)
                 case _:
                     pass
+
+    def write_create_event(self, line: bytes, generic_event: GenericEvent):
+        record = msgspec.json.decode(line, type=CreateEvent)
+        self.writers.archive.writerow(self.generic_event_tuple(generic_event))
+        ref = record.payload.ref[:255] if record.payload.ref else None
+        self.writers.createevent.writerow((generic_event.id, ref, record.payload.ref_type,
+                                           record.payload.master_branch[:255], record.payload.description,
+                                           record.payload.pusher_type))
 
     def write_fork_event(self, line: bytes, generic_event: GenericEvent):
         record = msgspec.json.decode(line, type=ForkEvent)
@@ -75,7 +85,7 @@ class JSONToCSVConverter:
     def write_member_event(self, line: bytes, generic_event: GenericEvent):
         record = msgspec.json.decode(line, type=MemberEvent)
         self.writers.archive.writerow(
-            self.generic_event_tuple(generic_event, generic_event.id))
+            self.generic_event_tuple(generic_event))
         self.writers.memberevent.writerow((generic_event.id, record.payload.member.id,
                                            record.payload.member.login, record.payload.member.node_id,
                                            record.payload.member.type, record.payload.member.site_admin,
@@ -84,7 +94,7 @@ class JSONToCSVConverter:
     def write_gollum_event(self, line: bytes, generic_event: GenericEvent):
         record = msgspec.json.decode(line, type=GollumEvent)
         self.writers.archive.writerow(
-            self.generic_event_tuple(generic_event, generic_event.id))
+            self.generic_event_tuple(generic_event))
         for page in record.payload.pages:
             self.writers.gollumevent.writerow(
                 (generic_event.id, page.page_name, page.title, page.summary, page.action, page.sha))
@@ -92,7 +102,7 @@ class JSONToCSVConverter:
     def write_delete_event(self, line: bytes, generic_event: GenericEvent):
         record = msgspec.json.decode(line, type=DeleteEvent)
         self.writers.archive.writerow(
-            self.generic_event_tuple(generic_event, generic_event.id))
+            self.generic_event_tuple(generic_event))
         self.writers.deleteevent.writerow((generic_event.id, record.payload.ref[:255], record.payload.ref_type,
                                            record.payload.pusher_type))
 

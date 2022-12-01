@@ -79,7 +79,6 @@ CREATE UNLOGGED TABLE IF NOT EXISTS gollumevent (
     sha VARCHAR(40)
 ) WITHOUT OIDS;
 
-
 CREATE UNLOGGED TABLE IF NOT EXISTS memberevent (
     event_id BIGINT,
     member_id BIGINT,
@@ -133,4 +132,13 @@ CREATE UNLOGGED TABLE IF NOT EXISTS forkevent (
     license_name VARCHAR(255),
     license_spdx_id VARCHAR(255),
     license_node_id VARCHAR(255)    
+) WITHOUT OIDS;
+
+CREATE UNLOGGED TABLE IF NOT EXISTS createevent (
+    event_id BIGINT,
+    ref VARCHAR(255),
+    ref_type VARCHAR(10),
+    master_branch VARCHAR(255),
+    description TEXT,
+    pusher_type VARCHAR(4)
 ) WITHOUT OIDS;

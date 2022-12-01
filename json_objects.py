@@ -217,3 +217,16 @@ class ForkEventPayload(msgspec.Struct):
 
 class ForkEvent(msgspec.Struct):
     payload: ForkEventPayload
+
+
+# CreateEvent
+
+class CreateEventPayload(msgspec.Struct):
+    ref_type: str
+    master_branch: str
+    pusher_type: str
+    description: Optional[str] = None
+    ref: Optional[str] = None
+
+class CreateEvent(msgspec.Struct):
+    payload: CreateEventPayload
