@@ -36,9 +36,10 @@ class DatabaseLink:
             query = f"COPY {table} FROM '{data_path}/{table}.csv' WITH (FORMAT csv)"
             try:
                 self.cursor.execute(query)
-            except psycopg2.errors.CharacterNotInRepertoire:
-                logging.error(f'Error in table {table}, removing null bytes')
+            except psycopg2.DataError as e:
+                logging.error(f'Error inserting {table}: {e}')
                 self.conn.rollback()
+                logging.info(f'Removing null bytes and retrying inserting {table}')
                 os.system(f"{sed_name} -i 's/\\x00//g' {data_path}/{table}.csv")
                 self.cursor.execute(query)
             self.conn.commit()
