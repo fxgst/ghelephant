@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS archive (
+CREATE UNLOGGED TABLE IF NOT EXISTS archive (
     id BIGINT,
     type VARCHAR(29),
     actor_id BIGINT,
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS archive (
     org_login VARCHAR(255)
 ) WITHOUT OIDS;
 
-CREATE TABLE IF NOT EXISTS commit (
+CREATE UNLOGGED TABLE IF NOT EXISTS commit (
     sha VARCHAR(40),
     push_id BIGINT,
     author_email VARCHAR(255),
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS commit (
     is_distinct BOOLEAN
 ) WITHOUT OIDS;
 
-CREATE TABLE IF NOT EXISTS pushevent (
+CREATE UNLOGGED TABLE IF NOT EXISTS pushevent (
     id BIGINT,
     size INT,
     distinct_size INT,
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS pushevent (
     before VARCHAR(40)
 ) WITHOUT OIDS;
 
-CREATE TABLE IF NOT EXISTS commitcommentevent (
+CREATE UNLOGGED TABLE IF NOT EXISTS commitcommentevent (
     id BIGINT,
     node_id VARCHAR(255),
     position INT NULL,
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS commitcommentevent (
     reactions_eyes INT
 ) WITHOUT OIDS;
 
-CREATE TABLE IF NOT EXISTS releaseevent (
+CREATE UNLOGGED TABLE IF NOT EXISTS releaseevent (
     id BIGINT,
     node_id VARCHAR(255),
     tag_name VARCHAR(255),
@@ -63,14 +63,14 @@ CREATE TABLE IF NOT EXISTS releaseevent (
     body TEXT
 ) WITHOUT OIDS;
 
-CREATE TABLE IF NOT EXISTS deleteevent (
+CREATE UNLOGGED TABLE IF NOT EXISTS deleteevent (
     event_id BIGINT,
     ref VARCHAR(255),
     ref_type VARCHAR(6),
     pusher_type VARCHAR(4)
 ) WITHOUT OIDS;
 
-CREATE TABLE IF NOT EXISTS gollumevent (
+CREATE UNLOGGED TABLE IF NOT EXISTS gollumevent (
     event_id BIGINT,
     page_name VARCHAR(255),
     title VARCHAR(255),
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS gollumevent (
 ) WITHOUT OIDS;
 
 
-CREATE TABLE IF NOT EXISTS memberevent (
+CREATE UNLOGGED TABLE IF NOT EXISTS memberevent (
     event_id BIGINT,
     member_id BIGINT,
     login VARCHAR(255),
