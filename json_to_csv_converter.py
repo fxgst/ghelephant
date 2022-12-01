@@ -1,5 +1,6 @@
 from json_objects import *
 import orjson
+import logging
 
 
 class JSONToCSVConverter:
@@ -11,7 +12,12 @@ class JSONToCSVConverter:
         added_pushes = set()
 
         for line in f:
-            generic_event = msgspec.json.decode(line, type=GenericEvent)
+            try:
+                generic_event = msgspec.json.decode(line, type=GenericEvent)
+            except msgspec.ValidationError:
+                logging.error(f"Malformed event: {line}")
+                continue
+            
             if generic_event.id in added_ids:
                 continue
             else:
