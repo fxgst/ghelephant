@@ -34,6 +34,7 @@ class DatabaseLink:
 
     def insert_csvs_into_db(self):
         for table in self.get_csv_files():
+            logging.info(f'Inserting {table} into database')
             query = f"COPY {table} FROM '{data_path}/{table}.csv' WITH (FORMAT csv)"
             try:
                 self.cursor.execute(query)
@@ -43,4 +44,3 @@ class DatabaseLink:
                 os.system(f"{sed_name} -i 's/\\x00//g' {data_path}/{table}.csv")
                 self.cursor.execute(query)
             self.conn.commit()
-            logging.info(f'Inserted {table} into database')
