@@ -14,6 +14,7 @@ class CSVWriters:
         self.deleteevent_f = open(f'{data_path}/deleteevent.csv', mode)
         self.gollumevent_f = open(f'{data_path}/gollumevent.csv', mode)
         self.memberevent_f = open(f'{data_path}/memberevent.csv', mode)
+        self.forkevent_f = open(f'{data_path}/forkevent.csv', mode)
 
         self.archive = csv.writer(self.archive_f, escapechar=escapechar)
         self.commit = csv.writer(self.commit_f, escapechar=escapechar)
@@ -23,6 +24,7 @@ class CSVWriters:
         self.deleteevent = csv.writer(self.deleteevent_f, escapechar=escapechar)
         self.gollumevent = csv.writer(self.gollumevent_f, escapechar=escapechar)
         self.memberevent = csv.writer(self.memberevent_f, escapechar=escapechar)
+        self.forkevent = csv.writer(self.forkevent_f, escapechar=escapechar)
 
     def __enter__(self):
         self.__init__()
@@ -40,3 +42,4 @@ class CSVWriters:
         self.deleteevent_f.close()
         self.gollumevent_f.close()
         self.memberevent_f.close()
+        self.forkevent_f.close()

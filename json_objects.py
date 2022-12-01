@@ -162,3 +162,58 @@ class MemberEventPayload(msgspec.Struct):
 
 class MemberEvent(msgspec.Struct):
     payload: MemberEventPayload
+
+
+# ForkEvent
+
+class License(msgspec.Struct):
+    key: str
+    name: str
+    spdx_id: str
+    node_id: str
+
+
+class Forkee(msgspec.Struct):
+    id: int
+    node_id: str
+    name: str
+    private: bool
+    owner: Member
+    fork: bool
+    created_at: datetime
+    updated_at: datetime
+    pushed_at: datetime
+    size: int
+    stargazers_count: int
+    watchers_count: int
+    has_issues: bool
+    has_projects: bool
+    has_downloads: bool
+    has_wiki: bool
+    has_pages: bool
+    forks_count: int
+    archived: bool
+    disabled: bool
+    open_issues_count: int 
+    allow_forking: bool
+    is_template: bool
+    web_commit_signoff_required: bool
+    topics: list[str]
+    visibility: str
+    forks: int
+    open_issues: int
+    watchers: int
+    default_branch: str
+    public: bool
+    description: Optional[str] = None
+    homepage: Optional[str] = None
+    language: Optional[str] = None
+    license: Optional[License] = None
+
+
+class ForkEventPayload(msgspec.Struct):
+    forkee: Forkee
+
+
+class ForkEvent(msgspec.Struct):
+    payload: ForkEventPayload

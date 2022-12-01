@@ -17,7 +17,7 @@ class JSONToCSVConverter:
             except msgspec.ValidationError:
                 logging.error(f"Malformed event: {line}")
                 continue
-            
+
             if generic_event.id in added_ids:
                 continue
             else:
@@ -45,12 +45,37 @@ class JSONToCSVConverter:
                     self.write_generic_event(generic_event)
                 case 'MemberEvent':
                     self.write_member_event(line, generic_event)
+                case 'ForkEvent':
+                    self.write_fork_event(line, generic_event)
                 case _:
                     pass
 
+    def write_fork_event(self, line: bytes, generic_event: GenericEvent):
+        record = msgspec.json.decode(line, type=ForkEvent)
+        f = record.payload.forkee
+        license_key = f.license.key if f.license else None
+        license_name = f.license.name if f.license else None
+        license_spdx_id = f.license.spdx_id if f.license else None
+        license_node_id = f.license.node_id if f.license else None
+        self.writers.archive.writerow(
+            self.generic_event_tuple(generic_event, f.id))
+        self.writers.forkevent.writerow((f.id, f.node_id, f.name, f.private, f.owner.id, f.owner.login,
+                                         f.owner.node_id, f.owner.type, f.owner.site_admin, f.description, f.fork,
+                                         f.created_at,
+                                         f.updated_at, f.pushed_at, f.homepage, f.size, f.stargazers_count,
+                                         f.watchers_count,
+                                         f.language, f.has_issues, f.has_projects, f.has_downloads, f.has_wiki,
+                                         f.has_pages,
+                                         f.forks_count, f.archived, f.disabled, f.open_issues_count, f.allow_forking,
+                                         f.is_template, f.web_commit_signoff_required, f.topics, f.visibility, f.forks,
+                                         f.open_issues, f.watchers,
+                                         f.default_branch, f.public, license_key,
+                                         license_name, license_spdx_id, license_node_id))
+
     def write_member_event(self, line: bytes, generic_event: GenericEvent):
         record = msgspec.json.decode(line, type=MemberEvent)
-        self.writers.archive.writerow(self.generic_event_tuple(generic_event, generic_event.id))
+        self.writers.archive.writerow(
+            self.generic_event_tuple(generic_event, generic_event.id))
         self.writers.memberevent.writerow((generic_event.id, record.payload.member.id,
                                            record.payload.member.login, record.payload.member.node_id,
                                            record.payload.member.type, record.payload.member.site_admin,
@@ -58,30 +83,34 @@ class JSONToCSVConverter:
 
     def write_gollum_event(self, line: bytes, generic_event: GenericEvent):
         record = msgspec.json.decode(line, type=GollumEvent)
-        self.writers.archive.writerow(self.generic_event_tuple(generic_event, generic_event.id))
+        self.writers.archive.writerow(
+            self.generic_event_tuple(generic_event, generic_event.id))
         for page in record.payload.pages:
             self.writers.gollumevent.writerow(
                 (generic_event.id, page.page_name, page.title, page.summary, page.action, page.sha))
 
     def write_delete_event(self, line: bytes, generic_event: GenericEvent):
         record = msgspec.json.decode(line, type=DeleteEvent)
-        self.writers.archive.writerow(self.generic_event_tuple(generic_event, generic_event.id))
+        self.writers.archive.writerow(
+            self.generic_event_tuple(generic_event, generic_event.id))
         self.writers.deleteevent.writerow((generic_event.id, record.payload.ref[:255], record.payload.ref_type,
                                            record.payload.pusher_type))
 
     def write_release_event(self, line: bytes, generic_event: GenericEvent):
         record = msgspec.json.decode(line, type=ReleaseEvent)
         release = record.payload.release
-        self.writers.archive.writerow(self.generic_event_tuple(generic_event, release.id))
+        self.writers.archive.writerow(
+            self.generic_event_tuple(generic_event, release.id))
         self.writers.releaseevent.writerow((release.id, release.node_id, release.tag_name,
                                             release.target_commitish, release.name, release.draft, release.prerelease,
                                             release.created_at, release.published_at, release.body))
 
     def write_push_event(self, record: PushEvent, generic_event: GenericEvent):
-        self.writers.archive.writerow(self.generic_event_tuple(generic_event, record.payload.push_id))
+        self.writers.archive.writerow(self.generic_event_tuple(
+            generic_event, record.payload.push_id))
         self.writers.pushevent.writerow((record.payload.push_id, record.payload.size,
-                                         record.payload.distinct_size, record.payload.ref[:255], record.payload.head,
-                                         record.payload.before))
+                                         record.payload.distinct_size, record.payload.ref[:255],
+                                         record.payload.head, record.payload.before))
         for commit in record.payload.commits:
             self.writers.commit.writerow((commit.sha, record.payload.push_id,
                                           commit.author.email[:255], commit.author.name[:255], commit.message,
@@ -90,7 +119,8 @@ class JSONToCSVConverter:
     def write_commit_comment_event(self, line: bytes, generic_event: GenericEvent):
         record = orjson.loads(line)
         c = record['payload']['comment']
-        self.writers.archive.writerow(self.generic_event_tuple(generic_event, c['id']))
+        self.writers.archive.writerow(
+            self.generic_event_tuple(generic_event, c['id']))
         self.writers.commitcommentevent.writerow((c['id'], c['node_id'], c['position'], c['line'],
                                                   c['path'], c['commit_id'], c['author_association'], c['body'],
                                                   c['reactions']['total_count'], c['reactions']['+1'],
