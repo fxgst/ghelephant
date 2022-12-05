@@ -49,8 +49,27 @@ class JSONToCSVConverter:
                     self.write_fork_event(line, generic_event)
                 case 'CreateEvent':
                     self.write_create_event(line, generic_event)
+                case 'IssuesEvent':
+                    self.write_issues_event(line, generic_event, added_issuesevents)
                 case _:
                     pass
+
+    def write_issues_event(self, line: bytes, generic_event: GenericEvent):
+        record = orjson.loads(line)
+        i = record['payload']['issue']
+        self.writers.archive.writerow(self.generic_event_tuple(generic_event, i['id']))
+        assignee = i['assignee']['id'] if i['assignee'] else None
+        milestone = i['milestone']['id'] if i['milestone'] else None
+        app = i['performed_via_github_app']['slug'] if i['performed_via_github_app'] else None
+        self.writers.issuesevent.writerow((record['payload']['action'], i['id'], i['node_id'], i['number'], i['title'],
+                                            i['user']['login'], i['user']['id'], i['user']['node_id'], i['user']['type'],
+                                            i['user']['site_admin'], i['labels'], i['state'], i['locked'], assignee,
+                                            milestone, i['comments'], i['created_at'], i['updated_at'], i['closed_at'],
+                                            i['author_association'], i['active_lock_reason'], i['body'], i['reactions']['total_count'],
+                                            i['reactions']['+1'], i['reactions']['-1'], i['reactions']['laugh'], i['reactions']['hooray'],
+                                            i['reactions']['confused'], i['reactions']['heart'], i['reactions']['rocket'],
+                                            i['reactions']['eyes'], app, i['state_reason']))
+
 
     def write_create_event(self, line: bytes, generic_event: GenericEvent):
         record = msgspec.json.decode(line, type=CreateEvent)
