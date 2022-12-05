@@ -143,7 +143,7 @@ CREATE UNLOGGED TABLE IF NOT EXISTS createevent (
     pusher_type VARCHAR(4)
 ) WITHOUT OIDS;
 
-CREATE UNLOGGED TABLE IF NOT EXISTS issuesevent (
+CREATE UNLOGGED TABLE IF NOT EXISTS issue (
     action VARCHAR(8),
     id BIGINT,
     node_id VARCHAR(255),
@@ -158,6 +158,7 @@ CREATE UNLOGGED TABLE IF NOT EXISTS issuesevent (
     state VARCHAR(6),
     locked BOOLEAN,
     assignee_id VARCHAR(255),
+    assignees_ids VARCHAR(255),
     milestone_id VARCHAR(255),
     comments INT,
     created_at TIMESTAMP,
@@ -165,6 +166,8 @@ CREATE UNLOGGED TABLE IF NOT EXISTS issuesevent (
     closed_at TIMESTAMP,
     author_association VARCHAR(63),
     active_lock_reason VARCHAR(255),
+    draft BOOLEAN,
+    pull_request TEXT,
     body TEXT,
     reactions_total_count INT,
     reactions_plus_one INT,
@@ -175,6 +178,31 @@ CREATE UNLOGGED TABLE IF NOT EXISTS issuesevent (
     reactions_heart INT,
     reactions_rocket INT,
     reactions_eyes INT,
-    performed_via_github_app_id VARCHAR(255),
+    performed_via_github_app VARCHAR(255),
     state_reason VARCHAR(255)
+) WITHOUT OIDS;
+
+CREATE UNLOGGED TABLE IF NOT EXISTS issuecomment (
+    comment_id BIGINT,
+    issue_id BIGINT,
+    node_id VARCHAR(255),
+    user_id BIGINT,
+    user_login VARCHAR(255),
+    user_node_id VARCHAR(255),
+    user_type VARCHAR(12),
+    user_site_admin BOOLEAN,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    author_association VARCHAR(63),
+    body TEXT,
+    reactions_total_count INT,
+    reactions_plus_one INT,
+    reactions_minus_one INT,
+    reactions_laugh INT,
+    reactions_hooray INT,
+    reactions_confused INT,
+    reactions_heart INT,
+    reactions_rocket INT,
+    reactions_eyes INT,
+    performed_via_github_app VARCHAR(255)
 ) WITHOUT OIDS;
