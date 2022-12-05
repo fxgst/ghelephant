@@ -50,7 +50,7 @@ class JSONToCSVConverter:
                 case 'CreateEvent':
                     self.write_create_event(line, generic_event)
                 case 'IssuesEvent':
-                    self.write_issues_event(line, generic_event, added_issuesevents)
+                    self.write_issues_event(line, generic_event)
                 case _:
                     pass
 
