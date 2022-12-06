@@ -57,9 +57,31 @@ class JSONToCSVConverter:
                     self.write_pull_request_event(line, generic_event)
                 case 'PullRequestReviewEvent':
                     self.write_pull_request_review_event(line, generic_event)
+                case 'PullRequestReviewCommentEvent':
+                    self.write_pull_request_review_comment_event(line, generic_event)
                 case _:
-                    # logging.error(f'Unknown event type: {generic_event.type}')
-                    pass
+                    logging.error(f'Unknown event type: {generic_event.type}')
+
+    def write_pull_request_review_comment_event(self, line: bytes, generic_event: GenericEvent):
+        record = orjson.loads(line)
+        self.writers.archive.writerow(self.generic_event_tuple(generic_event, record['payload']['comment']['id']))
+        c = record['payload']['comment']
+        in_reply_to = c['in_reply_to_id'] if 'in_reply_to_id' in c else None
+        self.writers.pullrequestreviewcomment.writerow((c['id'], c['pull_request_review_id'], c['node_id'],
+                                                        c['diff_hunk'], c['path'], c['position'],
+                                                        c['original_position'], c['commit_id'],
+                                                        c['original_commit_id'], c['user']['id'],
+                                                        c['user']['login'], c['user']['node_id'],
+                                                        c['user']['type'], c['user']['site_admin'],
+                                                        c['body'], c['created_at'], c['updated_at'],
+                                                        c['author_association'], c['reactions']['total_count'],
+                                                        c['reactions']['+1'], c['reactions']['-1'],
+                                                        c['reactions']['laugh'], c['reactions']['hooray'],
+                                                        c['reactions']['confused'], c['reactions']['heart'],
+                                                        c['reactions']['rocket'], c['reactions']['eyes'],
+                                                        c['start_line'], c['original_start_line'],
+                                                        c['start_side'], c['line'], c['original_line'],
+                                                        c['side'], in_reply_to, record['payload']['pull_request']['id']))
 
     def write_pull_request_review_event(self, line: bytes, generic_event: GenericEvent):
         record = msgspec.json.decode(line, type=PullRequestReviewEvent)
@@ -70,7 +92,6 @@ class JSONToCSVConverter:
                                                 p.user.site_admin, p.body, p.commit_id,
                                                 p.submitted_at, p.state, p.author_association,
                                                 record.payload.pull_request.id))
-
 
     def write_pull_request_event(self, line: bytes, generic_event: GenericEvent):
         record = msgspec.json.decode(line, type=PullRequestEvent)
