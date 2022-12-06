@@ -302,3 +302,24 @@ class PullRequestEventPayload(msgspec.Struct):
 
 class PullRequestEvent(msgspec.Struct):
     payload: PullRequestEventPayload
+
+
+# PullRequestReviewEvent
+
+class Review(msgspec.Struct):
+    id: int
+    node_id: str
+    user: Member
+    commit_id: str
+    submitted_at: datetime
+    state: str
+    author_association: str
+    body: Optional[str] = None
+    
+class PullRequestReviewEventPayload(msgspec.Struct):
+    action: str
+    review: Review
+    pull_request: PullRequest
+
+class PullRequestReviewEvent(msgspec.Struct):
+    payload: PullRequestReviewEventPayload

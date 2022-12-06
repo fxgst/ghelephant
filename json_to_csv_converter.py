@@ -55,9 +55,22 @@ class JSONToCSVConverter:
                     self.write_issue_comment_event(line, generic_event)
                 case 'PullRequestEvent':
                     self.write_pull_request_event(line, generic_event)
+                case 'PullRequestReviewEvent':
+                    self.write_pull_request_review_event(line, generic_event)
                 case _:
                     # logging.error(f'Unknown event type: {generic_event.type}')
                     pass
+
+    def write_pull_request_review_event(self, line: bytes, generic_event: GenericEvent):
+        record = msgspec.json.decode(line, type=PullRequestReviewEvent)
+        self.writers.archive.writerow(self.generic_event_tuple(generic_event, record.payload.review.id))
+        p = record.payload.review
+        self.writers.pullrequestreview.writerow((p.id, record.payload.action, p.node_id, p.user.id,
+                                                p.user.login, p.user.node_id, p.user.type,
+                                                p.user.site_admin, p.body, p.commit_id,
+                                                p.submitted_at, p.state, p.author_association,
+                                                record.payload.pull_request.id))
+
 
     def write_pull_request_event(self, line: bytes, generic_event: GenericEvent):
         record = msgspec.json.decode(line, type=PullRequestEvent)

@@ -19,6 +19,7 @@ class CSVWriters:
         self.issue_f = open(f'{data_path}/issue.csv', mode)
         self.issuecomment_f = open(f'{data_path}/issuecomment.csv', mode)
         self.pullrequest_f = open(f'{data_path}/pullrequest.csv', mode)
+        self.pullrequestreview_f = open(f'{data_path}/pullrequestreview.csv', mode)
 
         self.archive = csv.writer(self.archive_f, escapechar=escapechar)
         self.commit = csv.writer(self.commit_f, escapechar=escapechar)
@@ -33,6 +34,7 @@ class CSVWriters:
         self.issue = csv.writer(self.issue_f, escapechar=escapechar)
         self.issuecomment = csv.writer(self.issuecomment_f, escapechar=escapechar)
         self.pullrequest = csv.writer(self.pullrequest_f, escapechar=escapechar)
+        self.pullrequestreview = csv.writer(self.pullrequestreview_f, escapechar=escapechar)
 
     def __enter__(self):
         self.__init__()
@@ -55,3 +57,4 @@ class CSVWriters:
         self.issue_f.close()
         self.issuecomment_f.close()
         self.pullrequest_f.close()
+        self.pullrequestreview_f.close()

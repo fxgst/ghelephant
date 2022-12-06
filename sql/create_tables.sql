@@ -251,3 +251,20 @@ CREATE UNLOGGED TABLE IF NOT EXISTS pullrequest (
     base_repo_id BIGINT,
     base_repo_sha VARCHAR(40)
 ) WITHOUT OIDS;
+
+CREATE UNLOGGED TABLE IF NOT EXISTS pullrequestreview (
+    id BIGINT,
+    action VARCHAR(8),
+    node_id VARCHAR(255),
+    user_id BIGINT,
+    user_login VARCHAR(255),
+    user_node_id VARCHAR(255),
+    user_type VARCHAR(12),
+    user_site_admin BOOLEAN,
+    body TEXT,
+    commit_id VARCHAR(40),
+    submitted_at TIMESTAMP,
+    state VARCHAR(31),
+    author_association VARCHAR(63),
+    pull_request_id BIGINT
+) WITHOUT OIDS;
