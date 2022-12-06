@@ -18,6 +18,7 @@ class CSVWriters:
         self.createevent_f = open(f'{data_path}/createevent.csv', mode)
         self.issue_f = open(f'{data_path}/issue.csv', mode)
         self.issuecomment_f = open(f'{data_path}/issuecomment.csv', mode)
+        self.pullrequest_f = open(f'{data_path}/pullrequest.csv', mode)
 
         self.archive = csv.writer(self.archive_f, escapechar=escapechar)
         self.commit = csv.writer(self.commit_f, escapechar=escapechar)
@@ -31,6 +32,7 @@ class CSVWriters:
         self.createevent = csv.writer(self.createevent_f, escapechar=escapechar)
         self.issue = csv.writer(self.issue_f, escapechar=escapechar)
         self.issuecomment = csv.writer(self.issuecomment_f, escapechar=escapechar)
+        self.pullrequest = csv.writer(self.pullrequest_f, escapechar=escapechar)
 
     def __enter__(self):
         self.__init__()
@@ -52,3 +54,4 @@ class CSVWriters:
         self.createevent_f.close()
         self.issue_f.close()
         self.issuecomment_f.close()
+        self.pullrequest_f.close()

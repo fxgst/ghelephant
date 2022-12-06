@@ -204,7 +204,7 @@ class Forkee(msgspec.Struct):
     open_issues: int
     watchers: int
     default_branch: str
-    public: bool
+    public: Optional[bool] = None
     description: Optional[str] = None
     homepage: Optional[str] = None
     language: Optional[str] = None
@@ -230,3 +230,75 @@ class CreateEventPayload(msgspec.Struct):
 
 class CreateEvent(msgspec.Struct):
     payload: CreateEventPayload
+
+
+# PullRequestEvent
+
+class PullRequestHead(msgspec.Struct):
+    sha: str
+    repo: Optional[Forkee]
+
+class Label(msgspec.Struct):
+    name: str
+
+class Milestone(msgspec.Struct):
+    id: int
+
+class Team(msgspec.Struct):
+    id: int
+    node_id: str
+    name: str
+    slug: str
+    privacy: str
+    url: str
+    html_url: str
+    members_url: str
+    repositories_url: str
+    permission: str
+    description: Optional[str] = None
+
+class PullRequest(msgspec.Struct):
+    id: int
+    node_id: str
+    number: int
+    state: str
+    locked: bool
+    title: str
+    user: Member
+    head: PullRequestHead
+    base: PullRequestHead
+    body: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    closed_at: Optional[datetime] = None
+    merged_at: Optional[datetime] = None
+    merge_commit_sha: Optional[str] = None
+    assignee: Optional[Member] = None
+    assignees: Optional[list[Member]] = None
+    requested_reviewers: Optional[list[Member]] = None
+    requested_teams: Optional[list[Team]] = None
+    labels: Optional[list[Label]] = None
+    milestone: Optional[Milestone] = None
+    draft: Optional[bool] = None
+    author_association: Optional[str] = None
+    active_lock_reason: Optional[str] = None
+    merged: Optional[bool] = None
+    mergeable: Optional[bool] = None
+    rebaseable: Optional[bool] = None
+    mergeable_state: Optional[str] = None
+    merged_by: Optional[Member] = None
+    comments: Optional[int] = None
+    review_comments: Optional[int] = None
+    maintainer_can_modify: Optional[bool] = None
+    commits: Optional[int] = None
+    additions: Optional[int] = None
+    deletions: Optional[int] = None
+    changed_files: Optional[int] = None
+
+class PullRequestEventPayload(msgspec.Struct):
+    action: str
+    number: int
+    pull_request: PullRequest
+
+class PullRequestEvent(msgspec.Struct):
+    payload: PullRequestEventPayload

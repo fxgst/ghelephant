@@ -53,8 +53,31 @@ class JSONToCSVConverter:
                     self.write_issues_event(line, generic_event)
                 case 'IssueCommentEvent':
                     self.write_issue_comment_event(line, generic_event)
+                case 'PullRequestEvent':
+                    self.write_pull_request_event(line, generic_event)
                 case _:
+                    # logging.error(f'Unknown event type: {generic_event.type}')
                     pass
+
+    def write_pull_request_event(self, line: bytes, generic_event: GenericEvent):
+        record = msgspec.json.decode(line, type=PullRequestEvent)
+        self.writers.archive.writerow(self.generic_event_tuple(generic_event, record.payload.pull_request.id))
+        pr = record.payload.pull_request
+        assignee = pr.assignee.id if pr.assignee else None
+        assignees = [a.id for a in pr.assignees] if pr.assignees else None
+        requested_reviewers = [r.id for r in pr.requested_reviewers] if pr.requested_reviewers else None
+        requested_teams = [t.name for t in pr.requested_teams] if pr.requested_teams else None
+        milestone = pr.milestone.id if pr.milestone else None
+        labels = [l.name for l in pr.labels] if pr.labels else None
+        head_repo = pr.head.repo.id if pr.head.repo else None
+        base_repo = pr.base.repo.id if pr.base.repo else None
+        self.writers.pullrequest.writerow((pr.id, record.payload.action, record.payload.number, pr.node_id, pr.state, pr.locked, pr.title,
+                                           pr.user.login, pr.user.id, pr.user.node_id, pr.user.type, pr.user.site_admin, pr.body,
+                                           pr.created_at, pr.updated_at, pr.closed_at, pr.merged_at, pr.merge_commit_sha, assignee, assignees, 
+                                           str(requested_reviewers)[:255], str(requested_teams)[:255], labels, milestone, pr.draft, pr.author_association,
+                                           pr.active_lock_reason, pr.merged, pr.mergeable, pr.mergeable_state, pr.merged_by.id if pr.merged_by else None,
+                                           pr.comments, pr.review_comments, pr.maintainer_can_modify, pr.commits, pr.additions, pr.deletions, pr.changed_files,
+                                           head_repo, pr.head.sha, base_repo, pr.base.sha))
 
     def write_issue_comment_event(self, line: bytes, generic_event: GenericEvent):
         record = orjson.loads(line)
