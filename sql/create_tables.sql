@@ -15,7 +15,7 @@ CREATE UNLOGGED TABLE IF NOT EXISTS archive (
 CREATE UNLOGGED TABLE IF NOT EXISTS commit (
     sha VARCHAR(40),
     push_id BIGINT,
-    author_email VARCHAR(255),
+    author_email VARCHAR(260),
     author_name VARCHAR(255),
     message TEXT,
     is_distinct BOOLEAN
@@ -32,7 +32,6 @@ CREATE UNLOGGED TABLE IF NOT EXISTS pushevent (
 
 CREATE UNLOGGED TABLE IF NOT EXISTS commitcommentevent (
     id BIGINT,
-    node_id VARCHAR(255),
     position INT NULL,
     line INT NULL,
     path VARCHAR(255) NULL,
@@ -52,7 +51,6 @@ CREATE UNLOGGED TABLE IF NOT EXISTS commitcommentevent (
 
 CREATE UNLOGGED TABLE IF NOT EXISTS releaseevent (
     id BIGINT,
-    node_id VARCHAR(255),
     tag_name VARCHAR(255),
     target_commitish VARCHAR(255),
     name VARCHAR(255),
@@ -67,7 +65,7 @@ CREATE UNLOGGED TABLE IF NOT EXISTS deleteevent (
     event_id BIGINT,
     ref VARCHAR(255),
     ref_type VARCHAR(6),
-    pusher_type VARCHAR(4)
+    pusher_type VARCHAR(10)
 ) WITHOUT OIDS;
 
 CREATE UNLOGGED TABLE IF NOT EXISTS gollumevent (
@@ -83,7 +81,6 @@ CREATE UNLOGGED TABLE IF NOT EXISTS memberevent (
     event_id BIGINT,
     member_id BIGINT,
     login VARCHAR(255),
-    node_id VARCHAR(255),
     type VARCHAR(4),
     site_admin BOOLEAN,
     action VARCHAR(5)
@@ -91,12 +88,10 @@ CREATE UNLOGGED TABLE IF NOT EXISTS memberevent (
 
 CREATE UNLOGGED TABLE IF NOT EXISTS forkevent (
     forkee_id BIGINT,
-    node_id VARCHAR(255),
     name VARCHAR(255),
     private BOOLEAN,
     owner_id BIGINT,
     owner_login VARCHAR(255),
-    owner_node_id VARCHAR(255),
     owner_type VARCHAR(12),
     owner_site_admin BOOLEAN,
     description TEXT,
@@ -130,8 +125,7 @@ CREATE UNLOGGED TABLE IF NOT EXISTS forkevent (
     public BOOLEAN,
     license_key VARCHAR(255),
     license_name VARCHAR(255),
-    license_spdx_id VARCHAR(255),
-    license_node_id VARCHAR(255)    
+    license_spdx_id VARCHAR(255)
 ) WITHOUT OIDS;
 
 CREATE UNLOGGED TABLE IF NOT EXISTS createevent (
@@ -140,18 +134,16 @@ CREATE UNLOGGED TABLE IF NOT EXISTS createevent (
     ref_type VARCHAR(10),
     master_branch VARCHAR(255),
     description TEXT,
-    pusher_type VARCHAR(4)
+    pusher_type VARCHAR(10)
 ) WITHOUT OIDS;
 
 CREATE UNLOGGED TABLE IF NOT EXISTS issue (
     action VARCHAR(8),
     id BIGINT,
-    node_id VARCHAR(255),
     number INT,
     title TEXT,
     user_login VARCHAR(255),
     user_id BIGINT,
-    user_node_id VARCHAR(255),
     user_type VARCHAR(12),
     user_site_admin BOOLEAN,
     labels TEXT,
@@ -185,10 +177,8 @@ CREATE UNLOGGED TABLE IF NOT EXISTS issue (
 CREATE UNLOGGED TABLE IF NOT EXISTS issuecomment (
     comment_id BIGINT,
     issue_id BIGINT,
-    node_id VARCHAR(255),
     user_id BIGINT,
     user_login VARCHAR(255),
-    user_node_id VARCHAR(255),
     user_type VARCHAR(12),
     user_site_admin BOOLEAN,
     created_at TIMESTAMP,
@@ -211,13 +201,11 @@ CREATE UNLOGGED TABLE IF NOT EXISTS pullrequest (
     id BIGINT,
     action VARCHAR(8),
     number INT,
-    node_id VARCHAR(255),
     state VARCHAR(6),
     locked BOOLEAN,
     title TEXT,
     user_login VARCHAR(255),
     user_id BIGINT,
-    user_node_id VARCHAR(255),
     user_type VARCHAR(12),
     user_site_admin BOOLEAN,
     body TEXT,
@@ -255,10 +243,8 @@ CREATE UNLOGGED TABLE IF NOT EXISTS pullrequest (
 CREATE UNLOGGED TABLE IF NOT EXISTS pullrequestreview (
     id BIGINT,
     action VARCHAR(8),
-    node_id VARCHAR(255),
     user_id BIGINT,
     user_login VARCHAR(255),
-    user_node_id VARCHAR(255),
     user_type VARCHAR(12),
     user_site_admin BOOLEAN,
     body TEXT,
@@ -272,7 +258,6 @@ CREATE UNLOGGED TABLE IF NOT EXISTS pullrequestreview (
 CREATE UNLOGGED TABLE IF NOT EXISTS pullrequestreviewcomment (
     id BIGINT,
     pull_request_review_id BIGINT,
-    node_id VARCHAR(255),
     diff_hunk TEXT,
     path TEXT,
     position INT,
@@ -281,7 +266,6 @@ CREATE UNLOGGED TABLE IF NOT EXISTS pullrequestreviewcomment (
     original_commit_id VARCHAR(40),
     user_id BIGINT,
     user_login VARCHAR(255),
-    user_node_id VARCHAR(255),
     user_type VARCHAR(12),
     user_site_admin BOOLEAN,
     body TEXT,

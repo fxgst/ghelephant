@@ -74,7 +74,6 @@ class Reactions(msgspec.Struct):
 
 class Comment(msgspec.Struct):
     id: int
-    node_id: str
     commit_id: str
     author_association: str
     body: str
@@ -96,7 +95,6 @@ class CommitCommentEvent(msgspec.Struct):
 
 class Release(msgspec.Struct):
     id: int
-    node_id: str
     tag_name: str
     target_commitish: str
     draft: bool
@@ -150,10 +148,8 @@ class GollumEvent(msgspec.Struct):
 class Member(msgspec.Struct):
     id: int
     login: str
-    node_id: str
     type: str
     site_admin: bool
-
 
 class MemberEventPayload(msgspec.Struct):
     action: str
@@ -169,13 +165,11 @@ class MemberEvent(msgspec.Struct):
 class License(msgspec.Struct):
     key: str
     name: str
-    spdx_id: str
-    node_id: str
+    spdx_id: Optional[str] = None
 
 
 class Forkee(msgspec.Struct):
     id: int
-    node_id: str
     name: str
     private: bool
     owner: Member
@@ -187,23 +181,23 @@ class Forkee(msgspec.Struct):
     stargazers_count: int
     watchers_count: int
     has_issues: bool
-    has_projects: bool
     has_downloads: bool
     has_wiki: bool
     has_pages: bool
     forks_count: int
-    archived: bool
-    disabled: bool
     open_issues_count: int 
-    allow_forking: bool
-    is_template: bool
-    web_commit_signoff_required: bool
-    topics: list[str]
-    visibility: str
     forks: int
     open_issues: int
     watchers: int
     default_branch: str
+    has_projects: Optional[bool] = None
+    archived: Optional[bool] = None
+    visibility: Optional[str] = None
+    topics: Optional[list[str]] = None
+    web_commit_signoff_required: Optional[bool] = None
+    is_template: Optional[bool] = None
+    allow_forking: Optional[bool] = None
+    disabled: Optional[bool] = None
     public: Optional[bool] = None
     description: Optional[str] = None
     homepage: Optional[str] = None
@@ -245,21 +239,10 @@ class Milestone(msgspec.Struct):
     id: int
 
 class Team(msgspec.Struct):
-    id: int
-    node_id: str
     name: str
-    slug: str
-    privacy: str
-    url: str
-    html_url: str
-    members_url: str
-    repositories_url: str
-    permission: str
-    description: Optional[str] = None
-
+    
 class PullRequest(msgspec.Struct):
     id: int
-    node_id: str
     number: int
     state: str
     locked: bool
@@ -308,7 +291,6 @@ class PullRequestEvent(msgspec.Struct):
 
 class Review(msgspec.Struct):
     id: int
-    node_id: str
     user: Member
     commit_id: str
     submitted_at: datetime

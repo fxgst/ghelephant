@@ -39,8 +39,9 @@ class DatabaseLink:
             try:
                 self.cursor.execute(query)
             except CharacterNotInRepertoire:
-                logging.error(f'Illegal character in {table}, removing null bytes and retrying')
                 self.conn.rollback()
+                logging.error(f'Illegal character in {table}, removing null bytes and retrying')
                 os.system(f"{sed_name} -i 's/\\x00//g' {data_path}/{table}.csv")
+                logging.info(f'Removed null bytes from {table}')
                 self.cursor.execute(query)
             self.conn.commit()
