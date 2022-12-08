@@ -23,10 +23,12 @@ class DatabaseLink:
     def create_tables(self):
         with open('sql/create_tables.sql', 'r') as f:
             self.cursor.execute(f.read())
+        self.conn.commit()
 
     def add_primary_keys(self):
         with open('sql/primary_keys.sql', 'r') as f:
             self.cursor.execute(f.read())
+        self.conn.commit()
 
     def get_csv_files(self):
         files = os.listdir(data_path)

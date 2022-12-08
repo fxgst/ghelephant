@@ -183,13 +183,13 @@ class Forkee(msgspec.Struct):
     has_issues: bool
     has_downloads: bool
     has_wiki: bool
-    has_pages: bool
     forks_count: int
     open_issues_count: int 
     forks: int
     open_issues: int
     watchers: int
     default_branch: str
+    has_pages: Optional[bool] = None
     has_projects: Optional[bool] = None
     archived: Optional[bool] = None
     visibility: Optional[str] = None
