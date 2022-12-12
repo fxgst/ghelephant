@@ -1,12 +1,39 @@
+CREATE TYPE eventtype AS ENUM ('CommitCommentEvent',
+    'CreateEvent',
+    'DeleteEvent',
+    'ForkEvent',
+    'GollumEvent',
+    'IssueCommentEvent',
+    'IssuesEvent',
+    'MemberEvent',
+    'PublicEvent',
+    'PullRequestEvent',
+    'PullRequestReviewCommentEvent',
+    'PullRequestReviewEvent',
+    'PushEvent',
+    'ReleaseEvent',
+    'WatchEvent'
+);
+CREATE TYPE issuestate AS ENUM ('closed', 'open');
+CREATE TYPE usertype AS ENUM ('Bot', 'Mannequin', 'Organization', 'User');
+CREATE TYPE authorassociation AS ENUM ('COLLABORATOR', 'CONTRIBUTOR', 'MANNEQUIN', 'MEMBER', 'NONE', 'OWNER');
+CREATE TYPE actiontype AS ENUM ('closed', 'created', 'opened', 'reopened', 'edited', 'added');
+CREATE TYPE prrstate AS ENUM ('approved', 'changes_requested', 'commented', 'dismissed');
+CREATE TYPE reftype AS ENUM ('branch', 'tag', 'repository');
+CREATE TYPE pushertype AS ENUM ('deploy_key', 'user');
+CREATE TYPE visibilitytype AS ENUM ('public');
+CREATE TYPE sidetype AS ENUM ('LEFT', 'RIGHT');
+CREATE TYPE activelockreasontype AS ENUM ('off-topic', 'resolved', 'spam', 'too heated');
+CREATE TYPE mergeablestatetype AS ENUM ('clean', 'dirty', 'unknown', 'unstable');
+
 CREATE UNLOGGED TABLE IF NOT EXISTS archive (
     id BIGINT,
-    type VARCHAR(29),
+    type eventtype,
     actor_id BIGINT,
     actor_login VARCHAR(255),
     repo_id BIGINT,
     repo_name VARCHAR(255),
     payload_id BIGINT,
-    public BOOLEAN,
     created_at TIMESTAMP,
     org_id BIGINT,
     org_login VARCHAR(255)
@@ -32,21 +59,12 @@ CREATE UNLOGGED TABLE IF NOT EXISTS pushevent (
 
 CREATE UNLOGGED TABLE IF NOT EXISTS commitcommentevent (
     id BIGINT,
-    position INT NULL,
-    line INT NULL,
-    path VARCHAR(255) NULL,
+    position INT,
+    line INT,
+    path VARCHAR(255),
     commit_id VARCHAR(40),
-    author_association VARCHAR(63),
-    body TEXT,
-    reactions_total_count INT,
-    reactions_plus_one INT,
-    reactions_minus_one INT,
-    reactions_laugh INT,
-    reactions_hooray INT,
-    reactions_confused INT,
-    reactions_heart INT,
-    reactions_rocket INT,
-    reactions_eyes INT
+    author_association authorassociation,
+    body TEXT
 ) WITHOUT OIDS;
 
 CREATE UNLOGGED TABLE IF NOT EXISTS releaseevent (
@@ -64,8 +82,8 @@ CREATE UNLOGGED TABLE IF NOT EXISTS releaseevent (
 CREATE UNLOGGED TABLE IF NOT EXISTS deleteevent (
     event_id BIGINT,
     ref VARCHAR(255),
-    ref_type VARCHAR(6),
-    pusher_type VARCHAR(10)
+    ref_type reftype,
+    pusher_type pushertype
 ) WITHOUT OIDS;
 
 CREATE UNLOGGED TABLE IF NOT EXISTS gollumevent (
@@ -73,7 +91,7 @@ CREATE UNLOGGED TABLE IF NOT EXISTS gollumevent (
     page_name VARCHAR(255),
     title VARCHAR(255),
     summary TEXT,
-    action VARCHAR(63),
+    action actiontype,
     sha VARCHAR(40)
 ) WITHOUT OIDS;
 
@@ -81,9 +99,9 @@ CREATE UNLOGGED TABLE IF NOT EXISTS memberevent (
     event_id BIGINT,
     member_id BIGINT,
     login VARCHAR(255),
-    type VARCHAR(4),
+    type usertype,
     site_admin BOOLEAN,
-    action VARCHAR(5)
+    action actiontype
 ) WITHOUT OIDS;
 
 CREATE UNLOGGED TABLE IF NOT EXISTS forkevent (
@@ -92,7 +110,7 @@ CREATE UNLOGGED TABLE IF NOT EXISTS forkevent (
     private BOOLEAN,
     owner_id BIGINT,
     owner_login VARCHAR(255),
-    owner_type VARCHAR(12),
+    owner_type usertype,
     owner_site_admin BOOLEAN,
     description TEXT,
     fork BOOLEAN,
@@ -117,7 +135,7 @@ CREATE UNLOGGED TABLE IF NOT EXISTS forkevent (
     is_template BOOLEAN,
     web_commit_signoff_required BOOLEAN,
     topics TEXT,
-    visibility VARCHAR(7),
+    visibility visibilitytype,
     forks INT,
     open_issues INT,
     watchers INT,
@@ -130,24 +148,24 @@ CREATE UNLOGGED TABLE IF NOT EXISTS forkevent (
 
 CREATE UNLOGGED TABLE IF NOT EXISTS createevent (
     event_id BIGINT,
-    ref VARCHAR(255),
-    ref_type VARCHAR(10),
-    master_branch VARCHAR(255),
+    ref VARCHAR(127),
+    ref_type reftype,
+    master_branch VARCHAR(127),
     description TEXT,
-    pusher_type VARCHAR(10)
+    pusher_type pushertype
 ) WITHOUT OIDS;
 
 CREATE UNLOGGED TABLE IF NOT EXISTS issue (
-    action VARCHAR(8),
+    action actiontype,
     id BIGINT,
     number INT,
     title TEXT,
     user_login VARCHAR(255),
     user_id BIGINT,
-    user_type VARCHAR(12),
+    user_type usertype,
     user_site_admin BOOLEAN,
     labels TEXT,
-    state VARCHAR(6),
+    state issuestate,
     locked BOOLEAN,
     assignee_id VARCHAR(255),
     assignees_ids VARCHAR(255),
@@ -156,7 +174,7 @@ CREATE UNLOGGED TABLE IF NOT EXISTS issue (
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     closed_at TIMESTAMP,
-    author_association VARCHAR(63),
+    author_association authorassociation,
     active_lock_reason VARCHAR(255),
     draft BOOLEAN,
     pull_request TEXT,
@@ -177,36 +195,34 @@ CREATE UNLOGGED TABLE IF NOT EXISTS issue (
 CREATE UNLOGGED TABLE IF NOT EXISTS issuecomment (
     comment_id BIGINT,
     issue_id BIGINT,
-    user_id BIGINT,
-    user_login VARCHAR(255),
-    user_type VARCHAR(12),
+    user_type usertype,
     user_site_admin BOOLEAN,
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
-    author_association VARCHAR(63),
+    author_association authorassociation,
     body TEXT,
-    reactions_total_count INT,
-    reactions_plus_one INT,
-    reactions_minus_one INT,
-    reactions_laugh INT,
-    reactions_hooray INT,
-    reactions_confused INT,
-    reactions_heart INT,
-    reactions_rocket INT,
-    reactions_eyes INT,
+    -- reactions_total_count INT,
+    -- reactions_plus_one INT,
+    -- reactions_minus_one INT,
+    -- reactions_laugh INT,
+    -- reactions_hooray INT,
+    -- reactions_confused INT,
+    -- reactions_heart INT,
+    -- reactions_rocket INT,
+    -- reactions_eyes INT,
     performed_via_github_app VARCHAR(255)
 ) WITHOUT OIDS;
 
 CREATE UNLOGGED TABLE IF NOT EXISTS pullrequest (
     id BIGINT,
-    action VARCHAR(8),
+    action actiontype,
     number INT,
-    state VARCHAR(6),
+    state issuestate,
     locked BOOLEAN,
     title TEXT,
     user_login VARCHAR(255),
     user_id BIGINT,
-    user_type VARCHAR(12),
+    user_type usertype,
     user_site_admin BOOLEAN,
     body TEXT,
     created_at TIMESTAMP,
@@ -221,11 +237,11 @@ CREATE UNLOGGED TABLE IF NOT EXISTS pullrequest (
     labels TEXT,
     milestone_id VARCHAR(255),
     draft BOOLEAN,
-    author_association VARCHAR(63),
-    active_lock_reason VARCHAR(63),
+    author_association authorassociation,
+    active_lock_reason activelockreasontype,
     merged BOOLEAN,
     mergeable BOOLEAN,
-    mergeable_state VARCHAR(63),
+    mergeable_state mergeablestatetype,
     merged_by_id VARCHAR(255),
     comments INT,
     review_comments INT,
@@ -242,16 +258,16 @@ CREATE UNLOGGED TABLE IF NOT EXISTS pullrequest (
 
 CREATE UNLOGGED TABLE IF NOT EXISTS pullrequestreview (
     id BIGINT,
-    action VARCHAR(8),
+    action actiontype,
     user_id BIGINT,
     user_login VARCHAR(255),
-    user_type VARCHAR(12),
+    user_type usertype,
     user_site_admin BOOLEAN,
     body TEXT,
     commit_id VARCHAR(40),
     submitted_at TIMESTAMP,
-    state VARCHAR(31),
-    author_association VARCHAR(63),
+    state prrstate,
+    author_association authorassociation,
     pull_request_id BIGINT
 ) WITHOUT OIDS;
 
@@ -266,12 +282,12 @@ CREATE UNLOGGED TABLE IF NOT EXISTS pullrequestreviewcomment (
     original_commit_id VARCHAR(40),
     user_id BIGINT,
     user_login VARCHAR(255),
-    user_type VARCHAR(12),
+    user_type usertype,
     user_site_admin BOOLEAN,
     body TEXT,
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
-    author_association VARCHAR(63),
+    author_association authorassociation,
     reactions_total_count INT,
     reactions_plus_one INT,
     reactions_minus_one INT,
@@ -283,10 +299,10 @@ CREATE UNLOGGED TABLE IF NOT EXISTS pullrequestreviewcomment (
     reactions_eyes INT,
     start_line INT,
     original_start_line INT,
-    start_side VARCHAR(6),
+    start_side sidetype,
     line INT,
     original_line INT,
-    side VARCHAR(6),
+    side sidetype,
     in_reply_to_id BIGINT,
     pull_request_id BIGINT
 ) WITHOUT OIDS;

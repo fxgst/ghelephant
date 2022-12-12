@@ -60,24 +60,11 @@ class PushEvent(msgspec.Struct):
 
 # CommitCommentEvent
 
-class Reactions(msgspec.Struct):
-    total_count: int
-    # plus_one: int
-    # minus_one: int
-    laugh: int
-    hooray: int
-    confused: int
-    heart: int
-    rocket: int
-    eyes: int
-
-
 class Comment(msgspec.Struct):
     id: int
     commit_id: str
     author_association: str
     body: str
-    reactions: Reactions
     position: Optional[int] = None
     line: Optional[int] = None
     path: Optional[str] = None

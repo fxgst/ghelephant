@@ -109,6 +109,7 @@ class JSONToCSVConverter:
                                            head_repo, pr.head.sha, base_repo, pr.base.sha))
 
     def write_issue_comment_event(self, line: bytes, generic_event: GenericEvent):
+        # TODO change to msgspec if no reactions shall be recorded
         record = orjson.loads(line)
         c = record['payload']['comment']
         comment_id = c['id']
@@ -117,9 +118,8 @@ class JSONToCSVConverter:
         self.writers.archive.writerow(self.generic_event_tuple(generic_event, comment_id))
         self.writers.issue.writerow(self.issue_event_tuple(record))
         app = c['performed_via_github_app']['slug'] if 'performed_via_github_app' in c and c['performed_via_github_app'] else None
-        self.writers.issuecomment.writerow((comment_id, issue_id, c['user']['id'], c['user']['login'], c['user']['type'], c['user']['site_admin'],
-                                            c['created_at'], c['updated_at'], c.get('author_association'), c['body'],
-                                            *self.reactions(c), app))
+        self.writers.issuecomment.writerow((comment_id, issue_id, c['user']['type'], c['user']['site_admin'],
+                                            c['created_at'], c['updated_at'], c.get('author_association'), c['body'], app))
 
     def issue_event_tuple(self, record):
         i = record['payload']['issue']
@@ -144,9 +144,9 @@ class JSONToCSVConverter:
     def write_create_event(self, line: bytes, generic_event: GenericEvent):
         record = msgspec.json.decode(line, type=CreateEvent)
         self.writers.archive.writerow(self.generic_event_tuple(generic_event))
-        ref = record.payload.ref[:255] if record.payload.ref else None
+        ref = record.payload.ref[:127] if record.payload.ref else None
         self.writers.createevent.writerow((generic_event.id, ref, record.payload.ref_type,
-                                           record.payload.master_branch[:255], record.payload.description,
+                                           record.payload.master_branch[:127], record.payload.description,
                                            record.payload.pusher_type))
 
     def write_fork_event(self, line: bytes, generic_event: GenericEvent):
@@ -209,12 +209,11 @@ class JSONToCSVConverter:
                                           commit.distinct))
 
     def write_commit_comment_event(self, line: bytes, generic_event: GenericEvent):
-        record = orjson.loads(line)
-        c = record['payload']['comment']
-        self.writers.archive.writerow(self.generic_event_tuple(generic_event, c['id']))
-        self.writers.commitcommentevent.writerow((c['id'], c['position'], c['line'],
-                                                  c['path'], c['commit_id'], c.get('author_association'), c['body'],
-                                                  *self.reactions(c)))
+        record = msgspec.json.decode(line, type=CommitCommentEvent)
+        c = record.payload.comment
+        self.writers.archive.writerow(self.generic_event_tuple(generic_event, c.id))
+        self.writers.commitcommentevent.writerow((c.id, c.position, c.line,
+                                                  c.path, c.commit_id, c.author_association, c.body))
 
     def write_generic_event(self, generic_event: GenericEvent):
         self.writers.archive.writerow(self.generic_event_tuple(generic_event))
@@ -230,5 +229,5 @@ class JSONToCSVConverter:
         org_id = record.org.id if record.org else None
         org_login = record.org.login if record.org else None
         return (record.id, record.type, record.actor.id, record.actor.login, record.repo.id,
-                record.repo.name, payload_id, record.public, record.created_at,
+                record.repo.name, payload_id, record.created_at,
                 org_id, org_login)
