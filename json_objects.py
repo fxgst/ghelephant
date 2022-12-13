@@ -292,3 +292,13 @@ class PullRequestReviewEventPayload(msgspec.Struct):
 
 class PullRequestReviewEvent(msgspec.Struct):
     payload: PullRequestReviewEventPayload
+
+
+# PullRequestReviewCommentEvent
+
+class PullRequestReviewCommentEventPayload(msgspec.Struct):
+    action: str
+    pull_request: PullRequest
+
+class PullRequestReviewCommentEvent(msgspec.Struct):
+    payload: PullRequestReviewCommentEventPayload

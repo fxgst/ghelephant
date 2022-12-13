@@ -42,8 +42,8 @@ CREATE UNLOGGED TABLE IF NOT EXISTS archive (
 CREATE UNLOGGED TABLE IF NOT EXISTS commit (
     sha VARCHAR(40),
     push_id BIGINT,
-    author_email VARCHAR(260),
-    author_name VARCHAR(255),
+    author_email VARCHAR(127),
+    author_name VARCHAR(127),
     message TEXT,
     is_distinct BOOLEAN
 ) WITHOUT OIDS;
@@ -204,7 +204,7 @@ CREATE UNLOGGED TABLE IF NOT EXISTS issuecomment (
     -- reactions_total_count INT,
     -- reactions_plus_one INT,
     -- reactions_minus_one INT,
-    -- reactions_laugh INT,
+    -- reactions_laugh INT, -- *almost always* 0 but not always
     -- reactions_hooray INT,
     -- reactions_confused INT,
     -- reactions_heart INT,

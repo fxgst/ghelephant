@@ -8,15 +8,15 @@ from json_to_csv_converter import JSONToCSVConverter
 from csv_writers import CSVWriters
 
 year = 2022
-month = 11
-start_day = 10
-end_day = 10
+month = 12
+start_day = 1
+end_day = 7
 
 def copy_insert():
     with CSVWriters() as writers:
         converter = JSONToCSVConverter(writers)
-        for d in range(start_day, end_day + 1):
-            for h in range(0, 24):
+        for d in reversed(range(start_day, end_day + 1)):
+            for h in reversed(range(0, 24)):
                 date_to_download = f'{year}-{str(month).zfill(2)}-{str(d).zfill(2)}-{h}'
                 FileManager.download_json(date_to_download)
                 file_name = f'{data_path}/{date_to_download}.json'
