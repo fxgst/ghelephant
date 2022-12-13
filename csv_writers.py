@@ -4,7 +4,7 @@ import csv
 
 class CSVWriters:
     def __init__(self):
-        escapechar = '\\'
+        escapechar = '°'
         mode = 'a'
         self.archive_f = open(f'{data_path}/archive.csv', mode)
         self.commit_f = open(f'{data_path}/commit.csv', mode)
