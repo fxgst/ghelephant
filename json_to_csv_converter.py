@@ -1,6 +1,7 @@
 from json_objects import *
 import orjson
 import logging
+import traceback
 
 
 class JSONToCSVConverter:
@@ -24,44 +25,48 @@ class JSONToCSVConverter:
             else:
                 self.added_ids.add(generic_event.id)
 
-            match generic_event.type:
-                case 'PushEvent':
-                    record = msgspec.json.decode(line, type=PushEvent)
-                    if record.payload.push_id in self.added_pushes:
-                        continue
-                    else:
-                        self.added_pushes.add(record.payload.push_id)
-                    self.write_push_event(record, generic_event)
-                case 'CommitCommentEvent':
-                    self.write_commit_comment_event(line, generic_event)
-                case 'WatchEvent':
-                    self.write_generic_event(generic_event)
-                case 'ReleaseEvent':
-                    self.write_release_event(line, generic_event)
-                case 'DeleteEvent':
-                    self.write_delete_event(line, generic_event)
-                case 'GollumEvent':
-                    self.write_gollum_event(line, generic_event)
-                case 'PublicEvent':
-                    self.write_generic_event(generic_event)
-                case 'MemberEvent':
-                    self.write_member_event(line, generic_event)
-                case 'ForkEvent':
-                    self.write_fork_event(line, generic_event)
-                case 'CreateEvent':
-                    self.write_create_event(line, generic_event)
-                case 'IssuesEvent':
-                    self.write_issues_event(line, generic_event)
-                case 'IssueCommentEvent':
-                    self.write_issue_comment_event(line, generic_event)
-                case 'PullRequestEvent':
-                    self.write_pull_request_event(line, generic_event)
-                case 'PullRequestReviewEvent':
-                    self.write_pull_request_review_event(line, generic_event)
-                case 'PullRequestReviewCommentEvent':
-                    self.write_pull_request_review_comment_event(line, generic_event)
-                case _:
-                    logging.error(f'Unknown event type: {generic_event.type}')
+            try:
+                match generic_event.type:
+                    case 'PushEvent':
+                        record = msgspec.json.decode(line, type=PushEvent)
+                        if record.payload.push_id in self.added_pushes:
+                            continue
+                        else:
+                            self.added_pushes.add(record.payload.push_id)
+                        self.write_push_event(record, generic_event)
+                    case 'CommitCommentEvent':
+                        self.write_commit_comment_event(line, generic_event)
+                    case 'WatchEvent':
+                        self.write_generic_event(generic_event)
+                    case 'ReleaseEvent':
+                        self.write_release_event(line, generic_event)
+                    case 'DeleteEvent':
+                        self.write_delete_event(line, generic_event)
+                    case 'GollumEvent':
+                        self.write_gollum_event(line, generic_event)
+                    case 'PublicEvent':
+                        self.write_generic_event(generic_event)
+                    case 'MemberEvent':
+                        self.write_member_event(line, generic_event)
+                    case 'ForkEvent':
+                        self.write_fork_event(line, generic_event)
+                    case 'CreateEvent':
+                        self.write_create_event(line, generic_event)
+                    case 'IssuesEvent':
+                        self.write_issues_event(line, generic_event)
+                    case 'IssueCommentEvent':
+                        self.write_issue_comment_event(line, generic_event)
+                    case 'PullRequestEvent':
+                        self.write_pull_request_event(line, generic_event)
+                    case 'PullRequestReviewEvent':
+                        self.write_pull_request_review_event(line, generic_event)
+                    case 'PullRequestReviewCommentEvent':
+                        self.write_pull_request_review_comment_event(line, generic_event)
+                    case _:
+                        logging.error(f'Unknown event type: {generic_event.type}')
+            except Exception as e:
+                logging.error(f'Error writing line: {line}')
+                logging.error(traceback.format_exc())
 
     def write_pull_request_tuple(self, pr, action):
         if pr.id in self.added_prs:
