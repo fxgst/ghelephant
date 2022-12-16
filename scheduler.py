@@ -63,6 +63,7 @@ class Scheduler:
 
         if hour % 24 == 24 - 1:
             converter.writers.close()
+            # TODO properly wait if not ready
             self.__rename_files()
             copy_thread = threading.Thread(target=Scheduler.copy_csvs)
             copy_thread.start()
