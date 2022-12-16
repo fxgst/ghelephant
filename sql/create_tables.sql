@@ -1,30 +1,35 @@
-CREATE TYPE eventtype AS ENUM ('CommitCommentEvent',
-    'CreateEvent',
-    'DeleteEvent',
-    'ForkEvent',
-    'GollumEvent',
-    'IssueCommentEvent',
-    'IssuesEvent',
-    'MemberEvent',
-    'PublicEvent',
-    'PullRequestEvent',
-    'PullRequestReviewCommentEvent',
-    'PullRequestReviewEvent',
-    'PushEvent',
-    'ReleaseEvent',
-    'WatchEvent'
-);
-CREATE TYPE issuestate AS ENUM ('closed', 'open');
-CREATE TYPE usertype AS ENUM ('Bot', 'Mannequin', 'Organization', 'User');
-CREATE TYPE authorassociation AS ENUM ('COLLABORATOR', 'CONTRIBUTOR', 'MANNEQUIN', 'MEMBER', 'NONE', 'OWNER');
-CREATE TYPE actiontype AS ENUM ('closed', 'created', 'opened', 'reopened', 'edited', 'added');
-CREATE TYPE prrstate AS ENUM ('approved', 'changes_requested', 'commented', 'dismissed');
-CREATE TYPE reftype AS ENUM ('branch', 'tag', 'repository');
-CREATE TYPE pushertype AS ENUM ('deploy_key', 'user');
-CREATE TYPE visibilitytype AS ENUM ('public');
-CREATE TYPE sidetype AS ENUM ('LEFT', 'RIGHT');
-CREATE TYPE activelockreasontype AS ENUM ('off-topic', 'resolved', 'spam', 'too heated');
-CREATE TYPE mergeablestatetype AS ENUM ('clean', 'dirty', 'unknown', 'unstable');
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'eventtype') THEN
+        CREATE TYPE eventtype AS ENUM ('CommitCommentEvent',
+            'CreateEvent',
+            'DeleteEvent',
+            'ForkEvent',
+            'GollumEvent',
+            'IssueCommentEvent',
+            'IssuesEvent',
+            'MemberEvent',
+            'PublicEvent',
+            'PullRequestEvent',
+            'PullRequestReviewCommentEvent',
+            'PullRequestReviewEvent',
+            'PushEvent',
+            'ReleaseEvent',
+            'WatchEvent'
+        );
+        CREATE TYPE issuestate AS ENUM ('closed', 'open');
+        CREATE TYPE usertype AS ENUM ('Bot', 'Mannequin', 'Organization', 'User');
+        CREATE TYPE authorassociation AS ENUM ('COLLABORATOR', 'CONTRIBUTOR', 'MANNEQUIN', 'MEMBER', 'NONE', 'OWNER');
+        CREATE TYPE actiontype AS ENUM ('closed', 'created', 'opened', 'reopened', 'edited', 'added');
+        CREATE TYPE prrstate AS ENUM ('approved', 'changes_requested', 'commented', 'dismissed');
+        CREATE TYPE reftype AS ENUM ('branch', 'tag', 'repository');
+        CREATE TYPE pushertype AS ENUM ('deploy_key', 'user');
+        CREATE TYPE visibilitytype AS ENUM ('public', 'private');
+        CREATE TYPE sidetype AS ENUM ('LEFT', 'RIGHT');
+        CREATE TYPE activelockreasontype AS ENUM ('off-topic', 'resolved', 'spam', 'too heated');
+        CREATE TYPE mergeablestatetype AS ENUM ('clean', 'dirty', 'unknown', 'unstable');
+    END IF;
+END $$;
 
 CREATE UNLOGGED TABLE IF NOT EXISTS archive (
     id BIGINT,
@@ -121,7 +126,7 @@ CREATE UNLOGGED TABLE IF NOT EXISTS forkevent (
     size INT,
     stargazers_count INT,
     watchers_count INT,
-    language VARCHAR(255),
+    language VARCHAR(127),
     has_issues BOOLEAN,
     has_projects BOOLEAN,
     has_downloads BOOLEAN,
