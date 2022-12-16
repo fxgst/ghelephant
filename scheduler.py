@@ -63,14 +63,15 @@ class Scheduler:
 
         if hour % 24 == 24 - 1:
             converter.writers.close()
-            # TODO properly wait if not ready
+             # wait until previous insert is done
+            while len([f for f in os.listdir(data_path) if f.endswith('.csv.insert')]) > 0:
+                time.sleep(0.05)
             self.__rename_files()
-            copy_thread = threading.Thread(target=Scheduler.copy_csvs)
+            copy_thread = threading.Thread(target=self.__copy_csvs)
             copy_thread.start()
             converter.writers = CSVWriters()
 
-    @staticmethod
-    def copy_csvs():
+    def __copy_csvs(self):
         logging.info('Inserting csvs into database')
         with DatabaseLink() as db:
             db.insert_csvs_into_db(suffix='.insert')
@@ -79,10 +80,9 @@ class Scheduler:
 
     def __rename_files(self):
         files = os.listdir(data_path)
-        csv_files = [f.removesuffix('.csv') for f in files if f.endswith('.csv')]
-
+        csv_files = [f for f in files if f.endswith('.csv')]
         for csv_file in csv_files:
-            os.rename(f'{data_path}/{csv_file}.csv', f'{data_path}/{csv_file}.csv.insert')
+            os.rename(f'{data_path}/{csv_file}', f'{data_path}/{csv_file}.insert')
 
     def __dates_to_download(self) -> list:
         dates_to_download = []
