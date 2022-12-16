@@ -71,3 +71,7 @@ class DownloadManager:
     @staticmethod
     def remove_csvs():
         os.system(f'rm {data_path}/*.csv')
+
+    @staticmethod
+    def remove_insert_csvs():
+        os.system(f'rm {data_path}/*.csv.insert')

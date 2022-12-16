@@ -19,7 +19,7 @@ class Scheduler:
         self.end_day = end_day
         self.dates_to_download = self.__dates_to_download()
 
-    def copy_insert(self):
+    def fast_insert(self):
         files_iterator = iter(self.dates_to_download)
         DownloadManager.download_and_decompress_json(next(files_iterator))
         download_thread = threading.Thread(target=DownloadManager.run, args=(files_iterator, 10))
@@ -63,11 +63,25 @@ class Scheduler:
 
         if hour % 24 == 24 - 1:
             converter.writers.close()
-            logging.info('Inserting csvs into database')
-            with DatabaseLink() as db:
-                db.insert_csvs_into_db()
-            DownloadManager.remove_csvs()
+            self.__rename_files()
+            copy_thread = threading.Thread(target=Scheduler.copy_csvs)
+            copy_thread.start()
             converter.writers = CSVWriters()
+
+    @staticmethod
+    def copy_csvs():
+        logging.info('Inserting csvs into database')
+        with DatabaseLink() as db:
+            db.insert_csvs_into_db(suffix='.insert')
+        DownloadManager.remove_insert_csvs()
+        exit()
+
+    def __rename_files(self):
+        files = os.listdir(data_path)
+        csv_files = [f.removesuffix('.csv') for f in files if f.endswith('.csv')]
+
+        for csv_file in csv_files:
+            os.rename(f'{data_path}/{csv_file}.csv', f'{data_path}/{csv_file}.csv.insert')
 
     def __dates_to_download(self) -> list:
         dates_to_download = []
