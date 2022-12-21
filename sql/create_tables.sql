@@ -27,7 +27,7 @@ BEGIN
         CREATE TYPE visibilitytype AS ENUM ('public', 'private');
         CREATE TYPE sidetype AS ENUM ('LEFT', 'RIGHT');
         CREATE TYPE activelockreasontype AS ENUM ('off-topic', 'resolved', 'spam', 'too heated');
-        CREATE TYPE mergeablestatetype AS ENUM ('clean', 'dirty', 'unknown', 'unstable');
+        CREATE TYPE mergeablestatetype AS ENUM ('clean', 'dirty', 'unknown', 'unstable', 'draft');
     END IF;
 END $$;
 
@@ -206,15 +206,16 @@ CREATE UNLOGGED TABLE IF NOT EXISTS issuecomment (
     updated_at TIMESTAMP,
     author_association authorassociation,
     body TEXT,
-    -- reactions_total_count INT,
-    -- reactions_plus_one INT,
-    -- reactions_minus_one INT,
-    -- reactions_laugh INT, -- *almost always* 0 but not always
-    -- reactions_hooray INT,
-    -- reactions_confused INT,
-    -- reactions_heart INT,
-    -- reactions_rocket INT,
-    -- reactions_eyes INT,
+    -- reactions *almost always* 0
+    reactions_total_count INT,
+    reactions_plus_one INT,
+    reactions_minus_one INT,
+    reactions_laugh INT,
+    reactions_hooray INT,
+    reactions_confused INT,
+    reactions_heart INT,
+    reactions_rocket INT,
+    reactions_eyes INT,
     performed_via_github_app VARCHAR(255)
 ) WITHOUT OIDS;
 

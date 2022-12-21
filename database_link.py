@@ -30,20 +30,17 @@ class DatabaseLink:
             self.cursor.execute(f.read())
         self.conn.commit()
 
-    def get_csv_files(self, suffix=''):
-        files = os.listdir(data_path)
-        return [f.removesuffix(f'.csv{suffix}') for f in files if f.endswith(f'.csv{suffix}')]
-
-    def insert_csvs_into_db(self, suffix=''):
-        for table in self.get_csv_files(suffix=suffix):
+    def insert_csvs_into_db(self, day):
+        files = [f.removesuffix(f'-{day}.csv') for f in os.listdir(data_path) if f.endswith(f'-{day}.csv')]
+        for table in files:
             logging.info(f'Inserting {table} into database')
-            query = f"COPY {table} FROM '{data_path}/{table}.csv{suffix}' WITH (FORMAT csv)"
+            query = f"COPY {table} FROM '{data_path}/{table}-{day}.csv' WITH (FORMAT csv)"
             try:
                 self.cursor.execute(query)
             except CharacterNotInRepertoire:
                 self.conn.rollback()
                 logging.error(f'Illegal character in {table}, removing null bytes and retrying')
-                os.system(f"{sed_name} -i 's/\\x00//g' {data_path}/{table}.csv{suffix}")
+                os.system(f"{sed_name} -i 's/\\x00//g' {data_path}/{table}-{day}.csv")
                 logging.info(f'Removed null bytes from {table}')
                 self.cursor.execute(query)
             self.conn.commit()

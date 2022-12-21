@@ -5,12 +5,12 @@ import traceback
 
 
 class JSONToCSVConverter:
-    def __init__(self, writers, added_ids, added_pushes, added_issues, added_prs) -> None:
+    def __init__(self, writers) -> None:
         self.writers = writers
-        self.added_ids = added_ids
-        self.added_pushes = added_pushes
-        self.added_issues = added_issues
-        self.added_prs = added_prs
+        self.added_ids = set()
+        self.added_pushes = set()
+        self.added_issues = set()
+        self.added_prs = set()
 
     def write_events(self, f):
         for line in reversed(f.readlines()):
@@ -64,7 +64,7 @@ class JSONToCSVConverter:
                         self.write_pull_request_review_comment_event(line, generic_event)
                     case _:
                         logging.error(f'Unknown event type: {generic_event.type}')
-            except Exception as e:
+            except Exception:
                 logging.error(f'Error writing line: {line}')
                 logging.error(traceback.format_exc())
 
@@ -127,7 +127,6 @@ class JSONToCSVConverter:
         self.write_pull_request_tuple(pr, record.payload.action)
 
     def write_issue_comment_event(self, line: bytes, generic_event: GenericEvent):
-        # TODO change to msgspec if no reactions shall be recorded
         record = orjson.loads(line)
         c = record['payload']['comment']
         comment_id = c['id']
@@ -139,7 +138,7 @@ class JSONToCSVConverter:
             self.writers.issue.writerow(self.issue_event_tuple(record))
         app = c['performed_via_github_app']['slug'] if 'performed_via_github_app' in c and c['performed_via_github_app'] else None
         self.writers.issuecomment.writerow((comment_id, issue_id, c['user']['type'], c['user']['site_admin'],
-                                            c['created_at'], c['updated_at'], c.get('author_association'), c['body'], app))
+                                            c['created_at'], c['updated_at'], c.get('author_association'), c['body'], *self.reactions(c), app))
 
     def issue_event_tuple(self, record):
         i = record['payload']['issue']
@@ -254,3 +253,9 @@ class JSONToCSVConverter:
         return (record.id, record.type, record.actor.id, record.actor.login, record.repo.id,
                 record.repo.name, payload_id, record.created_at,
                 org_id, org_login)
+
+    def reset_added_sets(self):
+        self.added_ids = set()
+        self.added_pushes = set()
+        self.added_issues = set()
+        self.added_prs = set()

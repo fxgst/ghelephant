@@ -3,24 +3,24 @@ import csv
 
 
 class CSVWriters:
-    def __init__(self):
+    def __init__(self, date):
         escapechar = '°'
         mode = 'a'
-        self.archive_f = open(f'{data_path}/archive.csv', mode)
-        self.commit_f = open(f'{data_path}/commit.csv', mode)
-        self.pushevent_f = open(f'{data_path}/pushevent.csv', mode)
-        self.commitcommentevent_f = open(f'{data_path}/commitcommentevent.csv', mode)
-        self.releaseevent_f = open(f'{data_path}/releaseevent.csv', mode)
-        self.deleteevent_f = open(f'{data_path}/deleteevent.csv', mode)
-        self.gollumevent_f = open(f'{data_path}/gollumevent.csv', mode)
-        self.memberevent_f = open(f'{data_path}/memberevent.csv', mode)
-        self.forkevent_f = open(f'{data_path}/forkevent.csv', mode)
-        self.createevent_f = open(f'{data_path}/createevent.csv', mode)
-        self.issue_f = open(f'{data_path}/issue.csv', mode)
-        self.issuecomment_f = open(f'{data_path}/issuecomment.csv', mode)
-        self.pullrequest_f = open(f'{data_path}/pullrequest.csv', mode)
-        self.pullrequestreview_f = open(f'{data_path}/pullrequestreview.csv', mode)
-        self.pullrequestreviewcomment_f = open(f'{data_path}/pullrequestreviewcomment.csv', mode)
+        self.archive_f = open(f'{data_path}/archive-{date}.csv', mode)
+        self.commit_f = open(f'{data_path}/commit-{date}.csv', mode)
+        self.pushevent_f = open(f'{data_path}/pushevent-{date}.csv', mode)
+        self.commitcommentevent_f = open(f'{data_path}/commitcommentevent-{date}.csv', mode)
+        self.releaseevent_f = open(f'{data_path}/releaseevent-{date}.csv', mode)
+        self.deleteevent_f = open(f'{data_path}/deleteevent-{date}.csv', mode)
+        self.gollumevent_f = open(f'{data_path}/gollumevent-{date}.csv', mode)
+        self.memberevent_f = open(f'{data_path}/memberevent-{date}.csv', mode)
+        self.forkevent_f = open(f'{data_path}/forkevent-{date}.csv', mode)
+        self.createevent_f = open(f'{data_path}/createevent-{date}.csv', mode)
+        self.issue_f = open(f'{data_path}/issue-{date}.csv', mode)
+        self.issuecomment_f = open(f'{data_path}/issuecomment-{date}.csv', mode)
+        self.pullrequest_f = open(f'{data_path}/pullrequest-{date}.csv', mode)
+        self.pullrequestreview_f = open(f'{data_path}/pullrequestreview-{date}.csv', mode)
+        self.pullrequestreviewcomment_f = open(f'{data_path}/pullrequestreviewcomment-{date}.csv', mode)
 
         self.archive = csv.writer(self.archive_f, escapechar=escapechar)
         self.commit = csv.writer(self.commit_f, escapechar=escapechar)
@@ -37,13 +37,6 @@ class CSVWriters:
         self.pullrequest = csv.writer(self.pullrequest_f, escapechar=escapechar)
         self.pullrequestreview = csv.writer(self.pullrequestreview_f, escapechar=escapechar)
         self.pullrequestreviewcomment = csv.writer(self.pullrequestreviewcomment_f, escapechar=escapechar)
-
-    def __enter__(self):
-        self.__init__()
-        return self
-
-    def __exit__(self, exc_type, exc_value, exc_traceback):
-        self.close()
 
     def close(self):
         self.archive_f.close()
