@@ -18,28 +18,28 @@ class Manager:
         self.end_month = end_month
         self.end_day = end_day
         self.dates_to_download = self.__dates_to_download()
-        self.downloadedQueue = Queue(maxsize=10)
-        self.decompressedQueue = Queue(maxsize=10)
+        self.downloaded_queue = Queue(maxsize=10)
+        self.decompressed_queue = Queue(maxsize=10)
         self.written_queue = Queue(maxsize=3)
 
     def run_download(self):
         while date := next(self.dates_to_download, None):
             self.download_json(date)
-            self.downloadedQueue.put(date)
-        self.downloadedQueue.put(None)
+            self.downloaded_queue.put(date)
+        self.downloaded_queue.put(None)
 
     def run_decompress(self):
-        while date := self.downloadedQueue.get():
+        while date := self.downloaded_queue.get():
             self.decompress_json(date)
-            self.decompressedQueue.put(date)
-        self.decompressedQueue.put(None)
+            self.decompressed_queue.put(date)
+        self.decompressed_queue.put(None)
 
     def run_write_csvs(self):
         with DatabaseLink() as db:
             db.create_tables()
 
         converter = JSONToCSVConverter(writers=None)
-        while date := self.decompressedQueue.get():
+        while date := self.decompressed_queue.get():
             day, hour = date[:10], date[11:]
             if hour == '23':
                 converter.writers = CSVWriters(day)  # type: ignore
