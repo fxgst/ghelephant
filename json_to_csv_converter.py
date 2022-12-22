@@ -16,7 +16,7 @@ class JSONToCSVConverter:
         for line in reversed(f.readlines()):
             try:
                 generic_event = msgspec.json.decode(line, type=GenericEvent)
-            except msgspec.ValidationError:
+            except Exception:
                 logging.error(f"Malformed event: {line}")
                 continue
 

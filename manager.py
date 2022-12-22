@@ -18,20 +18,18 @@ class Manager:
         self.end_month = end_month
         self.end_day = end_day
         self.dates_to_download = self.__dates_to_download()
-        self.downloaded_queue = Queue(maxsize=10)
-        self.decompressed_queue = Queue(maxsize=10)
+        self.downloaded_queue = Queue(maxsize=50)
+        self.decompressed_queue = Queue(maxsize=50)
         self.written_queue = Queue(maxsize=3)
 
     def run_download(self):
         while date := next(self.dates_to_download, None):
             self.download_json(date)
-            self.downloaded_queue.put(date)
         self.downloaded_queue.put(None)
 
     def run_decompress(self):
         while date := self.downloaded_queue.get():
             self.decompress_json(date)
-            self.decompressed_queue.put(date)
         self.decompressed_queue.put(None)
 
     def run_write_csvs(self):
@@ -65,6 +63,27 @@ class Manager:
                 db.insert_csvs_into_db(day)
             self.remove_inserted_csvs(day)
 
+    def download_json(self, date_to_download):
+        path = f'{data_path}/{date_to_download}'
+        if os.path.isfile(f'{path}.json'):
+            return
+        logging.info(f'Downloading {date_to_download}')
+        response = requests.get(f'https://data.gharchive.org/{date_to_download}.json.gz')
+        if response.status_code != 200:
+            logging.error(f'Error downloading {date_to_download}')
+            return
+        with open(f'{path}.json.gz', 'wb') as f:
+            f.write(response.content)
+        self.downloaded_queue.put(date_to_download)
+
+    def decompress_json(self, date_to_download):
+        path = f'{data_path}/{date_to_download}'
+        if os.path.isfile(f'{path}.json'):
+            return
+        logging.info(f'Decompressing {date_to_download}')
+        os.system(f'gunzip {path}.json.gz')
+        self.decompressed_queue.put(date_to_download)
+
     def __dates_to_download(self):
         dates_to_download = []
         start_date = datetime.date(self.start_year, self.start_month, self.start_day)
@@ -76,24 +95,6 @@ class Manager:
                 dates_to_download.append(f'{day.year}-{str(day.month).zfill(2)}-{str(day.day).zfill(2)}-{h}')
         dates_to_download.reverse()
         return iter(dates_to_download)
-
-    @staticmethod
-    def download_json(date_to_download):
-        path = f'{data_path}/{date_to_download}'
-        if os.path.isfile(f'{path}.json'):
-            return
-        logging.info(f'Downloading {date_to_download}')
-        response = requests.get(f'https://data.gharchive.org/{date_to_download}.json.gz')
-        with open(f'{path}.json.gz', 'wb') as f:
-            f.write(response.content)
-
-    @staticmethod
-    def decompress_json(date_to_download):
-        path = f'{data_path}/{date_to_download}'
-        if os.path.isfile(f'{path}.json'):
-            return
-        logging.info(f'Decompressing {date_to_download}')
-        os.system(f'gunzip {path}.json.gz')
 
     @staticmethod
     def remove_json(date_to_download):
