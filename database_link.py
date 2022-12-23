@@ -2,7 +2,7 @@ import psycopg2
 import os
 import logging
 import traceback
-from variables import database_name, database_user
+from variables import *
 from variables import data_path, sed_name
 from csv_writers import CSVWriters
 from psycopg2.errors import CharacterNotInRepertoire
@@ -10,7 +10,8 @@ from psycopg2.errors import CharacterNotInRepertoire
 
 class DatabaseLink:
     def __init__(self):
-        self.conn = psycopg2.connect(database=database_name, user=database_user)
+        self.conn = psycopg2.connect(database=database_name, user=database_user,
+            password=database_password, host=database_host, port=database_port)
         self.cursor = self.conn.cursor()
 
     def __enter__(self):
