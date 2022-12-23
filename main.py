@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 import logging
-from manager import Manager
 import threading
 import argparse
+from manager import Manager
 
 
 def main():

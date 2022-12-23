@@ -1,12 +1,12 @@
-from json_objects import *
 import orjson
 import logging
 import traceback
+from json_objects import *
 
 
 class JSONToCSVConverter:
-    def __init__(self, writers) -> None:
-        self.writers = writers
+    def __init__(self, writer) -> None:
+        self.writer = writer
         self.added_ids = set()
         self.added_pushes = set()
         self.added_issues = set()
@@ -82,7 +82,7 @@ class JSONToCSVConverter:
         head_repo = pr.head.repo.id if pr.head.repo else None
         base_repo = pr.base.repo.id if pr.base.repo else None
 
-        self.writers.pullrequest.writerow((pr.id, action, pr.number, pr.state, pr.locked, pr.title,
+        self.writer.writers['pullrequest'].writerow((pr.id, action, pr.number, pr.state, pr.locked, pr.title,
                 pr.user.login, pr.user.id, pr.user.type, pr.user.site_admin, pr.body,
                 pr.created_at, pr.updated_at, pr.closed_at, pr.merged_at, pr.merge_commit_sha, assignee, assignees, 
                 str(requested_reviewers)[:255], str(requested_teams)[:255], labels, milestone, pr.draft, pr.author_association,
@@ -93,9 +93,9 @@ class JSONToCSVConverter:
     def write_pull_request_review_comment_event(self, line: bytes, generic_event: GenericEvent):
         record = orjson.loads(line)
         record_msgspec = msgspec.json.decode(line, type=PullRequestReviewCommentEvent)
-        self.writers.archive.writerow(self.generic_event_tuple(generic_event, record['payload']['comment']['id']))
+        self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event, record['payload']['comment']['id']))
         c = record['payload']['comment']
-        self.writers.pullrequestreviewcomment.writerow((c['id'], c.get('pull_request_review_id'),
+        self.writer.writers['pullrequestreviewcomment'].writerow((c['id'], c.get('pull_request_review_id'),
                                                         c['diff_hunk'], c['path'], c['position'],
                                                         c['original_position'], c['commit_id'],
                                                         c['original_commit_id'], c['user']['id'],
@@ -111,9 +111,9 @@ class JSONToCSVConverter:
 
     def write_pull_request_review_event(self, line: bytes, generic_event: GenericEvent):
         record = msgspec.json.decode(line, type=PullRequestReviewEvent)
-        self.writers.archive.writerow(self.generic_event_tuple(generic_event, record.payload.review.id))
+        self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event, record.payload.review.id))
         p = record.payload.review
-        self.writers.pullrequestreview.writerow((p.id, record.payload.action, p.user.id,
+        self.writer.writers['pullrequestreview'].writerow((p.id, record.payload.action, p.user.id,
                                                 p.user.login, p.user.type,
                                                 p.user.site_admin, p.body, p.commit_id,
                                                 p.submitted_at, p.state, p.author_association,
@@ -122,7 +122,7 @@ class JSONToCSVConverter:
 
     def write_pull_request_event(self, line: bytes, generic_event: GenericEvent):
         record = msgspec.json.decode(line, type=PullRequestEvent)
-        self.writers.archive.writerow(self.generic_event_tuple(generic_event, record.payload.pull_request.id))
+        self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event, record.payload.pull_request.id))
         pr = record.payload.pull_request
         self.write_pull_request_tuple(pr, record.payload.action)
 
@@ -132,12 +132,12 @@ class JSONToCSVConverter:
         comment_id = c['id']
         issue_id = record['payload']['issue']['id']
 
-        self.writers.archive.writerow(self.generic_event_tuple(generic_event, comment_id))
+        self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event, comment_id))
         if issue_id not in self.added_issues:
             self.added_issues.add(issue_id)
-            self.writers.issue.writerow(self.issue_event_tuple(record))
+            self.writer.writers['issue'].writerow(self.issue_event_tuple(record))
         app = c['performed_via_github_app']['slug'] if 'performed_via_github_app' in c and c['performed_via_github_app'] else None
-        self.writers.issuecomment.writerow((comment_id, issue_id, c['user']['type'], c['user']['site_admin'],
+        self.writer.writers['issuecomment'].writerow((comment_id, issue_id, c['user']['type'], c['user']['site_admin'],
                                             c['created_at'], c['updated_at'], c.get('author_association'), c['body'], *self.reactions(c), app))
 
     def issue_event_tuple(self, record):
@@ -157,16 +157,16 @@ class JSONToCSVConverter:
     def write_issues_event(self, line: bytes, generic_event: GenericEvent):
         record = orjson.loads(line)
         issue_id = record['payload']['issue']['id']
-        self.writers.archive.writerow(self.generic_event_tuple(generic_event, issue_id))
+        self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event, issue_id))
         if issue_id not in self.added_issues:
             self.added_issues.add(issue_id)
-            self.writers.issue.writerow(self.issue_event_tuple(record))
+            self.writer.writers['issue'].writerow(self.issue_event_tuple(record))
 
     def write_create_event(self, line: bytes, generic_event: GenericEvent):
         record = msgspec.json.decode(line, type=CreateEvent)
-        self.writers.archive.writerow(self.generic_event_tuple(generic_event))
+        self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event))
         ref = record.payload.ref[:127] if record.payload.ref else None
-        self.writers.createevent.writerow((generic_event.id, ref, record.payload.ref_type,
+        self.writer.writers['createevent'].writerow((generic_event.id, ref, record.payload.ref_type,
                                            record.payload.master_branch[:127], record.payload.description,
                                            record.payload.pusher_type))
 
@@ -176,8 +176,8 @@ class JSONToCSVConverter:
         license_key = f.license.key if f.license else None
         license_name = f.license.name if f.license else None
         license_spdx_id = f.license.spdx_id if f.license else None
-        self.writers.archive.writerow(self.generic_event_tuple(generic_event, f.id))
-        self.writers.forkevent.writerow((f.id, f.name[:255], f.private, f.owner.id, f.owner.login[:255],
+        self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event, f.id))
+        self.writer.writers['forkevent'].writerow((f.id, f.name[:255], f.private, f.owner.id, f.owner.login[:255],
                                          f.owner.type, f.owner.site_admin, f.description, f.fork,
                                          f.created_at,
                                          f.updated_at, f.pushed_at, f.homepage[:255] if f.homepage else None, f.size, f.stargazers_count,
@@ -192,40 +192,40 @@ class JSONToCSVConverter:
 
     def write_member_event(self, line: bytes, generic_event: GenericEvent):
         record = msgspec.json.decode(line, type=MemberEvent)
-        self.writers.archive.writerow(self.generic_event_tuple(generic_event))
-        self.writers.memberevent.writerow((generic_event.id, record.payload.member.id,
+        self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event))
+        self.writer.writers['memberevent'].writerow((generic_event.id, record.payload.member.id,
                                            record.payload.member.login[:255],
                                            record.payload.member.type, record.payload.member.site_admin,
                                            record.payload.action))
 
     def write_gollum_event(self, line: bytes, generic_event: GenericEvent):
         record = msgspec.json.decode(line, type=GollumEvent)
-        self.writers.archive.writerow(self.generic_event_tuple(generic_event))
+        self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event))
         for page in record.payload.pages:
-            self.writers.gollumevent.writerow(
+            self.writer.writers['gollumevent'].writerow(
                 (generic_event.id, page.page_name[:255], page.title[:255], page.summary, page.action, page.sha))
 
     def write_delete_event(self, line: bytes, generic_event: GenericEvent):
         record = msgspec.json.decode(line, type=DeleteEvent)
-        self.writers.archive.writerow(self.generic_event_tuple(generic_event))
-        self.writers.deleteevent.writerow((generic_event.id, record.payload.ref[:255], record.payload.ref_type,
+        self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event))
+        self.writer.writers['deleteevent'].writerow((generic_event.id, record.payload.ref[:255], record.payload.ref_type,
                                            record.payload.pusher_type))
 
     def write_release_event(self, line: bytes, generic_event: GenericEvent):
         record = msgspec.json.decode(line, type=ReleaseEvent)
         release = record.payload.release
-        self.writers.archive.writerow(self.generic_event_tuple(generic_event, release.id))
-        self.writers.releaseevent.writerow((release.id, release.tag_name[:255],
+        self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event, release.id))
+        self.writer.writers['releaseevent'].writerow((release.id, release.tag_name[:255],
                                             release.target_commitish[:255], release.name[:255] if release.name else None, release.draft, release.prerelease,
                                             release.created_at, release.published_at, release.body))
 
     def write_push_event(self, record: PushEvent, generic_event: GenericEvent):
-        self.writers.archive.writerow(self.generic_event_tuple(generic_event, record.payload.push_id))
-        self.writers.pushevent.writerow((record.payload.push_id, record.payload.size,
+        self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event, record.payload.push_id))
+        self.writer.writers['pushevent'].writerow((record.payload.push_id, record.payload.size,
                                          record.payload.distinct_size, record.payload.ref[:255],
                                          record.payload.head, record.payload.before))
         for commit in record.payload.commits:
-            self.writers.commit.writerow((commit.sha, record.payload.push_id,
+            self.writer.writers['commit'].writerow((commit.sha, record.payload.push_id,
                                           commit.author.email[:127], commit.author.name[:127], commit.message,
                                           commit.distinct))
 
@@ -233,12 +233,12 @@ class JSONToCSVConverter:
         record = msgspec.json.decode(line, type=CommitCommentEvent)
         c = record.payload.comment
         path = c.path[:255] if c.path else None
-        self.writers.archive.writerow(self.generic_event_tuple(generic_event, c.id))
-        self.writers.commitcommentevent.writerow((c.id, c.position, c.line,
+        self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event, c.id))
+        self.writer.writers['commitcommentevent'].writerow((c.id, c.position, c.line,
                                                   path, c.commit_id, c.author_association, c.body))
 
     def write_generic_event(self, generic_event: GenericEvent):
-        self.writers.archive.writerow(self.generic_event_tuple(generic_event))
+        self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event))
 
     def reactions(self, record):
         reactions = record.get('reactions')

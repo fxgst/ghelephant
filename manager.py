@@ -36,11 +36,11 @@ class Manager:
         with DatabaseLink() as db:
             db.create_tables()
 
-        converter = JSONToCSVConverter(writers=None)
+        converter = JSONToCSVConverter(writer=None)
         while date := self.decompressed_queue.get():
             day, hour = date[:10], date[11:]
             if hour == '23':
-                converter.writers = CSVWriters(day)  # type: ignore
+                converter.writer = CSVWriters(day)  # type: ignore
                 if day[-2:] == '01':
                     converter.reset_added_sets()
             file_name = f'{data_path}/{date}.json'
@@ -49,7 +49,7 @@ class Manager:
                 converter.write_events(f)
             self.remove_json(date)
             if hour == '0':
-                converter.writers.close()  # type: ignore
+                converter.writer.close()  # type: ignore
                 self.written_queue.put(day)
         self.written_queue.put(None)
 
