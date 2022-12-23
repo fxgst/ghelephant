@@ -1,6 +1,7 @@
 import psycopg2
 import os
 import logging
+import traceback
 from variables import database_name, database_user
 from variables import data_path, sed_name
 from csv_writers import CSVWriters
@@ -46,4 +47,5 @@ class DatabaseLink:
             except Exception:
                 self.conn.rollback()
                 logging.error(f'Error inserting {table} into database')
+                logging.error(traceback.format_exc())
             self.conn.commit()
