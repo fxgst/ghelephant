@@ -63,8 +63,8 @@ class PushEvent(msgspec.Struct):
 class Comment(msgspec.Struct):
     id: int
     commit_id: str
-    author_association: str
     body: str
+    author_association: Optional[str] = None
     position: Optional[int] = None
     line: Optional[int] = None
     path: Optional[str] = None
