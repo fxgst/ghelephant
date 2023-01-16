@@ -51,10 +51,7 @@ class Manager:
             if hour == '0':
                 converter.writer.close()  # type: ignore
                 self.written_queue.put(day)
-        self.written_queue.put(None)
-
-        with DatabaseLink() as db:
-            db.add_primary_keys()
+        self.written_queue.put(None)       
 
     def run_copy_into_database(self):
         while day := self.written_queue.get():
