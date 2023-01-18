@@ -10,9 +10,9 @@ from database_link import DatabaseLink
 def main():
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--start-date', type=str, required=True, help='Start date in format YYYY-MM-DD')
-    parser.add_argument('-e', '--end-date', type=str, required=True, help='End date in format YYYY-MM-DD')
-    parser.add_argument('-p', '--add-primary-keys', type=bool, required=False, help='Add primary keys to database')
+    parser.add_argument('-s', '--start-date', type=str, required=False, help='Start date in format YYYY-MM-DD')
+    parser.add_argument('-e', '--end-date', type=str, required=False, help='End date in format YYYY-MM-DD')
+    parser.add_argument('-p', '--add-primary-keys', required=False, help='Add primary keys to database', action='store_true')
     args = parser.parse_args()
 
     if args.add_primary_keys:
