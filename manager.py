@@ -1,5 +1,6 @@
 import requests
 import os
+import gzip
 import logging
 import datetime
 from variables import data_path
@@ -18,9 +19,9 @@ class Manager:
         self.end_month = end_month
         self.end_day = end_day
         self.dates_to_download = self.__dates_to_download()
-        self.downloaded_queue = Queue(maxsize=50)
-        self.decompressed_queue = Queue(maxsize=50)
-        self.written_queue = Queue(maxsize=3)
+        self.downloaded_queue = Queue(maxsize=40)
+        self.decompressed_queue = Queue(maxsize=40)
+        self.written_queue = Queue(maxsize=2)
 
     def run_download(self):
         while date := next(self.dates_to_download, None):
@@ -38,27 +39,26 @@ class Manager:
 
         converter = JSONToCSVConverter(writer=None)
         while date := self.decompressed_queue.get():
-            day, hour = date[:10], date[11:]
-            if hour == '23':
-                converter.writer = CSVWriters(day)  # type: ignore
-                if day[-2:] == '01':
-                    converter.reset_added_sets()
+            converter.writer = CSVWriters(date)
+            # at the first of the month, reset sets to not use too much memory
+            if date[-5:] == '01-23':
+                converter.reset_added_sets()
             file_name = f'{data_path}/{date}.json'
             logging.info(f'Writing csv for {date}')
             with open(file_name, 'rb') as f:
                 converter.write_events(f)
             self.remove_json(date)
-            if hour == '0':
-                converter.writer.close()  # type: ignore
-                self.written_queue.put(day)
-        self.written_queue.put(None)       
+            converter.writer.close()
+            self.written_queue.put(date)
+
+        self.written_queue.put(None)      
 
     def run_copy_into_database(self):
-        while day := self.written_queue.get():
-            logging.info(f'Copying {day} into database')
+        while date := self.written_queue.get():
+            logging.info(f'Copying {date} into database')
             with DatabaseLink() as db:
-                db.insert_csvs_into_db(day)
-            self.remove_inserted_csvs(day)
+                db.insert_csvs_into_db(date)
+            self.remove_inserted_csvs(date)
 
     def download_json(self, date_to_download):
         path = f'{data_path}/{date_to_download}'

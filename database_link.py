@@ -33,20 +33,19 @@ class DatabaseLink:
             self.cursor.execute(f.read())
         self.conn.commit()
 
-    def insert_csvs_into_db(self, day):
+    def insert_csvs_into_db(self, date):
         for table in CSVWriters.file_names:
-            logging.info(f'Inserting {table} into database')
-            query = f"COPY {table} FROM '{data_path}/{table}-{day}.csv' WITH (FORMAT csv)"
+            query = f"COPY {table} FROM '{data_path}/{table}-{date}.csv' WITH (FORMAT csv)"
             try:
                 self.cursor.execute(query)
             except CharacterNotInRepertoire:
                 self.conn.rollback()
-                logging.warn(f'Illegal character in {table}, removing null bytes and retrying')
-                os.system(f"{sed_name} -i 's/\\x00//g' {data_path}/{table}-{day}.csv")
+                logging.warn(f'Illegal character in {table} for {date}, removing null bytes and retrying')
+                os.system(f"{sed_name} -i 's/\\x00//g' {data_path}/{table}-{date}.csv")
                 logging.info(f'Removed null bytes from {table}')
                 self.cursor.execute(query)
             except Exception:
                 self.conn.rollback()
-                logging.error(f'Error inserting {table} into database')
+                logging.error(f'Error inserting {table} for {date} into database')
                 logging.error(traceback.format_exc())
             self.conn.commit()
