@@ -28,8 +28,8 @@ class DatabaseLink:
             self.cursor.execute(f.read())
         self.conn.commit()
 
-    def add_primary_keys(self):
-        with open('sql/primary_keys.sql', 'r') as f:
+    def create_indices(self):
+        with open('sql/create_indices.sql', 'r') as f:
             self.cursor.execute(f.read())
         self.conn.commit()
 

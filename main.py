@@ -12,13 +12,13 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--start-date', type=str, required=False, help='Start date in format YYYY-MM-DD')
     parser.add_argument('-e', '--end-date', type=str, required=False, help='End date in format YYYY-MM-DD')
-    parser.add_argument('-p', '--add-primary-keys', required=False, help='Add primary keys to database', action='store_true')
+    parser.add_argument('-p', '--create-indices', required=False, help='Create indices for tables', action='store_true')
     args = parser.parse_args()
 
-    if args.add_primary_keys:
-        logging.info('Adding primary keys to database')
+    if args.create_indices:
+        logging.info('Creating indices')
         with DatabaseLink() as db:
-            db.add_primary_keys()
+            db.create_indices()
     else:
         start_year, start_month, start_day = args.start_date.split('-')
         end_year, end_month, end_day = args.end_date.split('-')
