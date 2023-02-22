@@ -16,7 +16,6 @@ def main():
     args = parser.parse_args()
 
     if args.create_indices:
-        logging.info('Creating indices')
         with DatabaseLink() as db:
             db.create_indices()
     else:

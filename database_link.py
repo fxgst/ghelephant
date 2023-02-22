@@ -29,9 +29,11 @@ class DatabaseLink:
         self.conn.commit()
 
     def create_indices(self):
+        logging.info('Creating indices')
         with open('sql/create_indices.sql', 'r') as f:
             self.cursor.execute(f.read())
         self.conn.commit()
+        logging.info('Finished creating indices')
 
     def insert_csvs_into_db(self, date):
         for table in CSVWriters.file_names:
