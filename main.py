@@ -12,7 +12,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--start-date', type=str, required=False, help='Start date in format YYYY-MM-DD')
     parser.add_argument('-e', '--end-date', type=str, required=False, help='End date in format YYYY-MM-DD')
-    parser.add_argument('-p', '--create-indices', required=False, help='Create indices for tables', action='store_true')
+    parser.add_argument('-i', '--create-indices', required=False, help='Create indices for tables', action='store_true')
     args = parser.parse_args()
 
     if args.create_indices:

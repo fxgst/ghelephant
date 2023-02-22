@@ -1,7 +1,7 @@
--- archive
-create index archive_id_idx on archive (id);
+ALTER TABLE archive ADD PRIMARY KEY (id);
 create index archive_actor_login_idx on archive (actor_login);
 create index archive_repo_name_idx on archive (repo_name);
+
 -- created_at
 create index archive_created_at_idx on archive (created_at);
 create index releaseevent_created_at_idx on releaseevent (created_at);
