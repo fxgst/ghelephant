@@ -3,7 +3,6 @@ import os
 import logging
 import traceback
 from variables import *
-from variables import data_path, sed_name
 from csv_writers import CSVWriters
 from psycopg2.errors import CharacterNotInRepertoire
 
