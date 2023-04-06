@@ -14,7 +14,9 @@ def main():
     parser.add_argument('-s', '--start-date', type=str, required=False, help='Start date in format YYYY-MM-DD')
     parser.add_argument('-e', '--end-date', type=str, required=False, help='End date in format YYYY-MM-DD')
     parser.add_argument('-i', '--create-indices', required=False, help='Create indices for tables', action='store_true')
-    parser.add_argument('-c', '--get-commit-changes', type=str, required=False, help='Fetch commit details from the GitHub API for a csv file. The csv file must have columns repo_name and sha.')
+    parser.add_argument('-t', '--token', type=str, required=False, help='Access token for the GitHub API')
+    parser.add_argument('-c', '--add-commit-details', type=str, required=False, help='Append commit details from the GitHub API to a csv file. The csv file must have columns repo_name and sha')
+    parser.add_argument('-u', '--add-user-details', type=str, required=False, help='Append user details from the GitHub API to a csv file. The csv file must have the column actor_login')
 
     args = parser.parse_args()
 
@@ -38,9 +40,13 @@ def main():
         copying_thread = threading.Thread(target=manager.run_copy_into_database, name='copyingThread')
         copying_thread.start()
     
-    elif args.get_commit_changes:
-        processing = Processing()
-        processing.get_commit_changes(args.get_commit_changes)
+    elif args.add_commit_details:
+        processing = Processing(filename=args.add_commit_details, auth_token=args.token)
+        processing.add_commit_details()
+    
+    elif args.add_user_details:
+        processing = Processing(filename=args.add_user_details, auth_token=args.token)
+        processing.add_user_details()
 
 
 if __name__ == '__main__':

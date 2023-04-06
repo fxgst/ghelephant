@@ -5,33 +5,60 @@ import json
 import os.path
 
 class Processing:
-    def get_commit_changes(self, filename):
+    def __init__(self, filename, auth_token=None):
+        self.headers = {'Authorization': 'Token ' + auth_token} if auth_token else None
         if not filename.endswith('.csv'):
             print('File must be a csv file.')
             return
         if not os.path.isfile(filename):
             print('File does not exist.')
             return
+        self.filename = filename
 
-        df = pd.read_csv(filename)
+    def add_commit_details(self):
+        df = pd.read_csv(self.filename)
         if not ('repo_name' in df.columns and 'sha' in df.columns):
             print('File must have columns repo_name and sha.')
             return
         for index, d in tqdm(df.iterrows(), total=df.shape[0]):
-            commit_details = self.get_commit_details(d['repo_name'], d['sha'])
+            commit_details = self.fetch_commit_details(d['repo_name'], d['sha'])
             df.at[index, 'commit details'] = commit_details
-        df.to_csv(filename, index=False)
+        df.to_csv(self.filename, index=False)
 
-    def get_commit_details(self, repo, sha):
+    def add_user_details(self):
+        df = pd.read_csv(self.filename)
+        if not ('actor_login' in df.columns):
+            print('File must have column actor_login.')
+            return
+        for index, d in tqdm(df.iterrows(), total=df.shape[0]):
+            user_details = self.fetch_user_details(d['actor_login'])
+            df.at[index, 'bio'] = user_details.get('bio', '')
+            df.at[index, 'location'] = user_details.get('location', '')
+            df.at[index, 'blog'] = user_details.get('blog', '')
+            df.at[index, 'company'] = user_details.get('company', '')
+        df.to_csv(self.filename, index=False)
+
+    def fetch_user_details(self, username):
+        url = f'https://api.github.com/users/{username}'
+        response = requests.get(url, headers=self.headers)
+        if response.status_code == 200:
+            user_details = response.json()
+        elif response.status_code == 403:
+            print(response.text)
+            exit(1)
+        else:
+            user_details = {'bio': '', 'location': '', 'blog': '', 'company': ''}
+        return user_details
+    
+    def fetch_commit_details(self, repo, sha):
         url = f'https://api.github.com/repos/{repo}/commits/{sha}'
-        response = requests.get(url)
+        response = requests.get(url, headers=self.headers)
         if response.status_code == 200 and 'files' in response.json():
             commit_details = json.dumps(response.json()['files'])
+        elif response.status_code == 403:
+            print(response.text)
+            exit(1)
         else:
-            commit_details = f'Commit for {url} not found.'
+            commit_details = f'Commit for not found.'
 
         return commit_details
-
-
-        
-        
