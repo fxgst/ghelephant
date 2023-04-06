@@ -11,13 +11,14 @@ from processing import Processing
 def main():
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--start-date', type=str, required=False, help='Start date in format YYYY-MM-DD')
-    parser.add_argument('-e', '--end-date', type=str, required=False, help='End date in format YYYY-MM-DD')
-    parser.add_argument('-i', '--create-indices', required=False, help='Create indices for tables', action='store_true')
-    parser.add_argument('-t', '--token', type=str, required=False, help='Access token for the GitHub API')
-    parser.add_argument('-c', '--add-commit-details', type=str, required=False, help='Append commit details from the GitHub API to a csv file. The csv file must have columns repo_name and sha')
-    parser.add_argument('-u', '--add-user-details', type=str, required=False, help='Append user details from the GitHub API to a csv file. The csv file must have the column actor_login')
-
+    parser.add_argument('-s', '--start-date', type=str, required=False, help='Start date in format YYYY-MM-DD.')
+    parser.add_argument('-e', '--end-date', type=str, required=False, help='End date in format YYYY-MM-DD.')
+    parser.add_argument('-i', '--create-indices', required=False, help='Create indices for tables.', action='store_true')
+    parser.add_argument('-t', '--token', type=str, required=False, help='Access token for the GitHub API.')
+    parser.add_argument('-c', '--add-commit-details', type=str, required=False, help='Append commit details from the GitHub API to a csv file. The csv file must have columns repo_name and sha.')
+    parser.add_argument('-u', '--add-user-details', type=str, required=False, help='Append user details from the GitHub API to a csv file. The csv file must have the column actor_login.')
+    parser.add_argument('-r', '--clone-repos', type=str, required=False, help='Clone repos listed in a csv file from GitHub into a folder. Use in conjunction with -o and specify an empty folder where to clone the repos to. The csv file must have the column repo_name.')
+    parser.add_argument('-o', '--outpath', type=str, required=False, help='The path where to clone the repos to. Only use in conjunction with -r.')
     args = parser.parse_args()
 
     if args.create_indices:
@@ -28,7 +29,6 @@ def main():
         start_year, start_month, start_day = args.start_date.split('-')
         end_year, end_month, end_day = args.end_date.split('-')
         assert int(start_year) >= 2015, 'Start year must be 2015 or later.'
-
         manager = Manager(start_year=int(start_year), start_month=int(start_month), start_day=int(start_day),
                             end_year=int(end_year), end_month=int(end_month), end_day=int(end_day))
         downloading_thread = threading.Thread(target=manager.run_download, name='downloadingThread')
@@ -47,6 +47,13 @@ def main():
     elif args.add_user_details:
         processing = Processing(filename=args.add_user_details, auth_token=args.token)
         processing.add_user_details()
+
+    elif args.clone_repos and args.outpath:
+        processing = Processing(filename=args.clone_repos, repo_path=args.outpath)
+        processing.clone_repos()
+
+    else:
+        parser.print_help()
 
 
 if __name__ == '__main__':

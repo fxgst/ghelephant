@@ -3,10 +3,12 @@ import pandas as pd
 from tqdm import tqdm
 import json
 import os.path
+import subprocess
 
 class Processing:
-    def __init__(self, filename, auth_token=None):
+    def __init__(self, filename, auth_token=None, repo_path=None):
         self.headers = {'Authorization': 'Token ' + auth_token} if auth_token else None
+        self.repo_path = repo_path if repo_path else '.'
         if not filename.endswith('.csv'):
             print('File must be a csv file.')
             return
@@ -37,6 +39,23 @@ class Processing:
             df.at[index, 'blog'] = user_details.get('blog', '')
             df.at[index, 'company'] = user_details.get('company', '')
         df.to_csv(self.filename, index=False)
+
+    def clone_repos(self):
+        if not os.path.exists(self.repo_path):
+            os.mkdir(self.repo_path)
+        if not os.path.isdir(self.repo_path):
+            print('Repo path must be a directory.')
+            return
+        
+        df = pd.read_csv(self.filename)
+        if not ('repo_name' in df.columns):
+            print('File must have column repo_name.')
+            return
+        for _, d in tqdm(df.iterrows(), total=df.shape[0]):
+            self.clone_repo(d['repo_name'])
+
+    def clone_repo(self, repo_name):
+        subprocess.run(['git', '-C', self.repo_path, 'clone', f'https://github.com/{repo_name}.git'])
 
     def fetch_user_details(self, username):
         url = f'https://api.github.com/users/{username}'
