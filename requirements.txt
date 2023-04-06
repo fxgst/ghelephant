@@ -2,3 +2,5 @@ requests
 psycopg2
 orjson
 msgspec
+pandas
+tqdm

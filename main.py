@@ -5,6 +5,7 @@ import threading
 import argparse
 from manager import Manager
 from database_link import DatabaseLink
+from processing import Processing
 
 
 def main():
@@ -13,12 +14,15 @@ def main():
     parser.add_argument('-s', '--start-date', type=str, required=False, help='Start date in format YYYY-MM-DD')
     parser.add_argument('-e', '--end-date', type=str, required=False, help='End date in format YYYY-MM-DD')
     parser.add_argument('-i', '--create-indices', required=False, help='Create indices for tables', action='store_true')
+    parser.add_argument('-c', '--get-commit-changes', type=str, required=False, help='Fetch commit details from the GitHub API for a csv file. The csv file must have columns repo_name and sha.')
+
     args = parser.parse_args()
 
     if args.create_indices:
         with DatabaseLink() as db:
             db.create_indices()
-    else:
+
+    elif args.start_date and args.end_date:
         start_year, start_month, start_day = args.start_date.split('-')
         end_year, end_month, end_day = args.end_date.split('-')
 
@@ -32,6 +36,10 @@ def main():
         writing_thread.start()
         copying_thread = threading.Thread(target=manager.run_copy_into_database, name='copyingThread')
         copying_thread.start()
+    
+    elif args.get_commit_changes:
+        processing = Processing()
+        processing.get_commit_changes(args.get_commit_changes)
 
 
 if __name__ == '__main__':
