@@ -19,25 +19,34 @@ class Processing:
 
     def add_commit_details(self):
         df = pd.read_csv(self.filename)
+        seen = dict()
         if not ('repo_name' in df.columns and 'sha' in df.columns):
             print('File must have columns repo_name and sha.')
             return
         for index, d in tqdm(df.iterrows(), total=df.shape[0]):
-            commit_details = self.fetch_commit_details(d['repo_name'], d['sha'])
-            df.at[index, 'commit details'] = commit_details
+            repo = d['repo_name']
+            sha = d['sha']
+            if (repo, sha) not in seen:
+                print('Fetching commit details for', repo, sha)
+                seen[(repo, sha)] = self.fetch_commit_details(repo, sha)
+            df.at[index, 'commit details'] = seen[(repo, sha)]
         df.to_csv(self.filename, index=False)
 
     def add_user_details(self):
         df = pd.read_csv(self.filename)
+        seen = dict()
         if not ('actor_login' in df.columns):
             print('File must have column actor_login.')
             return
         for index, d in tqdm(df.iterrows(), total=df.shape[0]):
-            user_details = self.fetch_user_details(d['actor_login'])
-            df.at[index, 'bio'] = user_details.get('bio', '')
-            df.at[index, 'location'] = user_details.get('location', '')
-            df.at[index, 'blog'] = user_details.get('blog', '')
-            df.at[index, 'company'] = user_details.get('company', '')
+            actor = d['actor_login']
+            if actor not in seen:
+                seen[actor] = self.fetch_user_details(actor)
+            df.at[index, 'bio'] = seen[actor].get('bio', '')
+            df.at[index, 'location'] = seen[actor].get('location', '')
+            df.at[index, 'blog'] = seen[actor].get('blog', '')
+            df.at[index, 'company'] = seen[actor].get('company', '')      
+
         df.to_csv(self.filename, index=False)
 
     def clone_repos(self):
@@ -51,8 +60,11 @@ class Processing:
         if not ('repo_name' in df.columns):
             print('File must have column repo_name.')
             return
+        seen = set()
         for _, d in tqdm(df.iterrows(), total=df.shape[0]):
-            self.clone_repo(d['repo_name'])
+            if d['repo_name'] not in seen:
+                seen.add(d['repo_name'])
+                self.clone_repo(d['repo_name'])
 
     def clone_repo(self, repo_name):
         subprocess.run(['git', '-C', self.repo_path, 'clone', f'https://github.com/{repo_name}.git'])
