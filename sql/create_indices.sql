@@ -2,6 +2,7 @@ ALTER TABLE archive ADD PRIMARY KEY (id);
 create index archive_actor_login_idx on archive (actor_login);
 create index archive_repo_name_idx on archive (repo_name);
 create index archive_payload_id_idx on archive (payload_id);
+create index archive_type_idx on archive (type);
 
 create index issue_id_idx on issue (id);
 
