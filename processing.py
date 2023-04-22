@@ -4,6 +4,7 @@ from tqdm import tqdm
 import json
 import os.path
 import subprocess
+import time
 
 class Processing:
     def __init__(self, filename, auth_token=None, repo_path=None):
@@ -75,8 +76,18 @@ class Processing:
         if response.status_code == 200:
             user_details = response.json()
         elif response.status_code == 403:
-            print(response.text)
-            exit(1)
+            if int(response.headers['X-RateLimit-Remaining']) == 0:
+                # sleep until reset
+                target_timestamp = int(response.headers['X-RateLimit-Reset'])
+                current_timestamp = int(time.time())  # get the current Unix timestamp
+                seconds_to_sleep = target_timestamp - current_timestamp  # calculate the time difference
+                print(f'Rate limit of {response.headers["X-RateLimit-Limit"]} reached, sleeping until {target_timestamp}')
+                if seconds_to_sleep > 0:
+                    time.sleep(seconds_to_sleep)
+                return self.fetch_user_details(username)
+            else:
+                print(response.text)
+                exit(1)
         else:
             user_details = {'bio': '', 'location': '', 'blog': '', 'company': ''}
         return user_details
@@ -87,8 +98,18 @@ class Processing:
         if response.status_code == 200 and 'files' in response.json():
             commit_details = json.dumps(response.json()['files'])
         elif response.status_code == 403:
-            print(response.text)
-            exit(1)
+            if int(response.headers['X-RateLimit-Remaining']) == 0:
+                # sleep until reset
+                target_timestamp = int(response.headers['X-RateLimit-Reset'])
+                current_timestamp = int(time.time())  # get the current Unix timestamp
+                seconds_to_sleep = target_timestamp - current_timestamp  # calculate the time difference
+                print(f'Rate limit of {response.headers["X-RateLimit-Limit"]} reached, sleeping until {target_timestamp}')
+                if seconds_to_sleep > 0:
+                    time.sleep(seconds_to_sleep)
+                return self.fetch_commit_details(repo, sha)
+            else:
+                print(response.text)
+                exit(1)
         else:
             commit_details = f'Commit for not found.'
 
