@@ -1,10 +1,13 @@
 import requests
-import pandas as pd
-from tqdm import tqdm
 import json
 import os.path
 import subprocess
 import time
+import pycountry
+import pandas as pd
+from tqdm import tqdm
+from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderTimedOut
 
 class Processing:
     def __init__(self, filename, auth_token=None, repo_path=None):
@@ -22,7 +25,7 @@ class Processing:
         df = pd.read_csv(self.filename)
         seen = dict()
         if not ('repo_name' in df.columns and 'sha' in df.columns):
-            print('File must have columns repo_name and sha.')
+            print('File must have columns "repo_name" and "sha".')
             return
         for index, d in tqdm(df.iterrows(), total=df.shape[0]):
             repo = d['repo_name']
@@ -37,7 +40,7 @@ class Processing:
         df = pd.read_csv(self.filename)
         seen = dict()
         if not ('actor_login' in df.columns):
-            print('File must have column actor_login.')
+            print('File must have column "actor_login".')
             return
         for index, d in tqdm(df.iterrows(), total=df.shape[0]):
             actor = d['actor_login']
@@ -59,7 +62,7 @@ class Processing:
         
         df = pd.read_csv(self.filename)
         if not ('repo_name' in df.columns):
-            print('File must have column repo_name.')
+            print('File must have column "repo_name".')
             return
         seen = set()
         for _, d in tqdm(df.iterrows(), total=df.shape[0]):
@@ -114,3 +117,54 @@ class Processing:
             commit_details = f'Commit for not found.'
 
         return commit_details
+    
+    def add_country_details(self):
+        df = pd.read_csv(self.filename)
+        if not ('location' in df.columns):
+            print('File must have column "location". Run with option --add-user-details first.')
+            return
+
+        geolocator = Nominatim(user_agent="ghelephant")
+
+        # Function to get the country alpha_2 code from a location string
+        def get_country_alpha2(location):
+            try:
+                geocode_result = geolocator.geocode(location, timeout=10)
+                if geocode_result:
+                    reverse_result = geolocator.reverse((geocode_result.latitude, geocode_result.longitude), timeout=10)
+                    if reverse_result:
+                        address = reverse_result.raw['address']
+                        if 'country_code' in address:
+                            return address['country_code'].upper()
+                    else:
+                        print('No reverse result for location: {}'.format(location))
+            except GeocoderTimedOut:
+                return None
+
+        # Function to convert alpha_2 to alpha_3 country codes
+        def alpha2_to_alpha3(alpha_2_code):
+            try:
+                return pycountry.countries.get(alpha_2=alpha_2_code).alpha_3
+            except AttributeError:
+                return None
+
+        df['country_code_alpha3'] = None
+        df['country_code_alpha2'] = None
+        cache_alpha2 = {}
+        cache_alpha3 = {}
+        for index, row in tqdm(df.iterrows(), total=df.shape[0]):
+            if pd.notna(row['location']):
+                location = row['location']
+                if location not in cache_alpha2:
+                    cache_alpha2[location] = get_country_alpha2(location)
+                alpha2_code = cache_alpha2[location]
+
+                df.at[index, 'country_code_alpha2'] = alpha2_code
+                if alpha2_code:
+                    if alpha2_code not in cache_alpha3:
+                        cache_alpha3[alpha2_code] = alpha2_to_alpha3(alpha2_code)
+                    alpha3_code = cache_alpha3[alpha2_code]
+                    df.at[index, 'country_code_alpha3'] = alpha3_code
+
+        df.to_csv(self.filename, index=False)
+

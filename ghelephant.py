@@ -18,16 +18,20 @@ def main():
     parser.add_argument('-t', '--token', type=str, required=False, help='Access token for the GitHub API.')
     parser.add_argument('-c', '--add-commit-details', type=str, required=False,
                         help='Append commit details from the GitHub API to a csv file. '
-                             'The csv file must have columns repo_name and sha.')
+                             'The csv file must have columns "repo_name" and "sha".')
     parser.add_argument('-u', '--add-user-details', type=str, required=False,
                         help='Append user details from the GitHub API to a csv file. '
-                             'The csv file must have the column actor_login.')
+                             'The csv file must have the column "actor_login".')
     parser.add_argument('-r', '--clone-repos', type=str, required=False,
                         help='Clone repos listed in a csv file from GitHub into a folder.'
                              'Use in conjunction with -o and specify an empty folder where to clone the repos to.'
-                             'The csv file must have the column repo_name.')
+                             'The csv file must have the column "repo_name".')
     parser.add_argument('-o', '--outpath', type=str, required=False,
                         help='The path where to clone the repos to. Only use in conjunction with -r.')
+    parser.add_argument('-l', '--add-country-details', type=str, required=False,
+                        help='Append country details for users from the GitHub API to a csv file. '
+                             'The csv file must have the column "location". '
+                             'This option should be used only after running with option `-u` which added the column "location" to the csv file.')
     args = parser.parse_args()
 
     if args.create_indices:
@@ -60,6 +64,10 @@ def main():
     elif args.clone_repos and args.outpath:
         processing = Processing(filename=args.clone_repos, repo_path=args.outpath)
         processing.clone_repos()
+
+    elif args.add_country_details:
+        processing = Processing(filename=args.add_country_details)
+        processing.add_country_details()
 
     else:
         parser.print_help()
