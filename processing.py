@@ -84,9 +84,9 @@ class Processing:
                 target_timestamp = int(response.headers['X-RateLimit-Reset'])
                 current_timestamp = int(time.time())  # get the current Unix timestamp
                 seconds_to_sleep = target_timestamp - current_timestamp  # calculate the time difference
-                print(f'Rate limit of {response.headers["X-RateLimit-Limit"]} reached, sleeping until {target_timestamp}')
+                print(f'Rate limit of {response.headers["X-RateLimit-Limit"]} reached, sleeping until {target_timestamp + 1}')
                 if seconds_to_sleep > 0:
-                    time.sleep(seconds_to_sleep)
+                    time.sleep(seconds_to_sleep + 1)
                 return self.fetch_user_details(username)
             else:
                 print(response.text)
@@ -106,9 +106,9 @@ class Processing:
                 target_timestamp = int(response.headers['X-RateLimit-Reset'])
                 current_timestamp = int(time.time())  # get the current Unix timestamp
                 seconds_to_sleep = target_timestamp - current_timestamp  # calculate the time difference
-                print(f'Rate limit of {response.headers["X-RateLimit-Limit"]} reached, sleeping until {target_timestamp}')
+                print(f'Rate limit of {response.headers["X-RateLimit-Limit"]} reached, sleeping until {target_timestamp + 1}')
                 if seconds_to_sleep > 0:
-                    time.sleep(seconds_to_sleep)
+                    time.sleep(seconds_to_sleep + 1)
                 return self.fetch_commit_details(repo, sha)
             else:
                 print(response.text)
