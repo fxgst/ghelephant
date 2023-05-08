@@ -19,8 +19,8 @@ class Manager:
         self.end_month = end_month
         self.end_day = end_day
         self.dates_to_download = self.__dates_to_download()
-        self.downloaded_queue = Queue(maxsize=40)
-        self.decompressed_queue = Queue(maxsize=40)
+        self.downloaded_queue = Queue(maxsize=30)
+        self.decompressed_queue = Queue(maxsize=30)
         self.written_queue = Queue(maxsize=2)
 
     def run_download(self):
