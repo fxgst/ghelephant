@@ -10,6 +10,9 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
 
 class Processing:
+    """
+    Additional commands for GH Elephant: process csv data and enrich it with additional data.
+    """
     def __init__(self, filename, auth_token=None, repo_path=None):
         self.headers = {'Authorization': 'Token ' + auth_token} if auth_token else None
         self.repo_path = repo_path if repo_path else '.'

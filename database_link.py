@@ -8,6 +8,9 @@ from psycopg2.errors import CharacterNotInRepertoire
 
 
 class DatabaseLink:
+    """
+    Class to link to the database and perform operations on it.
+    """
     def __init__(self):
         self.conn = psycopg2.connect(database=database_name, user=database_user,
             password=database_password, host=database_host, port=database_port)

@@ -4,7 +4,7 @@ from variables import data_path
 
 class CSVWriters:
     """
-    Class to write CSV files
+    Class to manage different CSV writers.
     """
     file_names = ['archive', 'commit', 'pushevent', 'commitcommentevent', 'releaseevent', 'deleteevent',
             'gollumevent', 'memberevent', 'forkevent', 'createevent', 'issue', 'issuecomment', 'pullrequest',

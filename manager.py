@@ -10,6 +10,9 @@ from database_link import DatabaseLink
 
 
 class Manager:
+    """
+    Class to manage the download, decompression, and writing of data.
+    """
     def __init__(self, start_year, start_month, start_day, end_year, end_month, end_day):
         self.start_year = start_year
         self.start_month = start_month
