@@ -1,3 +1,5 @@
+-- creates all the tables and types needed. gets executed automatically when GH Elephant is first run to create a database.
+
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'eventtype') THEN

@@ -31,7 +31,8 @@ def main():
     parser.add_argument('-l', '--add-country-details', type=str, required=False,
                         help='Append country details for users from the GitHub API to a csv file. '
                              'The csv file must have the column "location". '
-                             'This option should be used only after running with option `-u` which added the column "location" to the csv file.')
+                             'This option should be used only after running with option `-u` which added the column '
+                             '"location" to the csv file.')
     args = parser.parse_args()
 
     if args.create_indices:

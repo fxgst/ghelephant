@@ -2,6 +2,9 @@ import msgspec
 from typing import Optional
 from datetime import datetime
 
+# contains all the json objects from Events API/GH Archive.
+# some of the objects are not used, but are included for completeness.
+
 
 # common properties
 

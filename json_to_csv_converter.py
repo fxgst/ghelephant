@@ -1,10 +1,14 @@
 import orjson
 import logging
 import traceback
+import msgspec
 from json_objects import *
 
 
 class JSONToCSVConverter:
+    """
+    Converts JSON file to CSV files.
+    """
     def __init__(self, writer) -> None:
         self.writer = writer
         self.added_ids = set()
@@ -13,6 +17,11 @@ class JSONToCSVConverter:
         self.added_prs = set()
 
     def write_events(self, f):
+        """
+        Write events from JSON file to CSV files, line by line.
+        :param f:  JSON file
+        :return:  None
+        """
         for line in reversed(f.readlines()):
             try:
                 generic_event = msgspec.json.decode(line, type=GenericEvent)
@@ -69,6 +78,12 @@ class JSONToCSVConverter:
                 logging.error(traceback.format_exc())
 
     def write_pull_request_tuple(self, pr, action):
+        """
+        Write a tuple of pull request data to the CSV file.
+        :param pr: line from JSON file
+        :param action: generic event
+        :return: None
+        """
         if pr.id in self.added_prs:
             return
         else:
@@ -91,6 +106,12 @@ class JSONToCSVConverter:
                 head_repo, pr.head.sha, base_repo, pr.base.sha))
 
     def write_pull_request_review_comment_event(self, line: bytes, generic_event: GenericEvent):
+        """
+        Write a pull request review comment event to the CSV file.
+        :param line: line from JSON file
+        :param generic_event: generic event
+        :return: None
+        """
         record = orjson.loads(line)
         record_msgspec = msgspec.json.decode(line, type=PullRequestReviewCommentEvent)
         self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event, record['payload']['comment']['id']))
@@ -110,6 +131,12 @@ class JSONToCSVConverter:
         self.write_pull_request_tuple(record_msgspec.payload.pull_request, record_msgspec.payload.action)
 
     def write_pull_request_review_event(self, line: bytes, generic_event: GenericEvent):
+        """
+        Write a pull request review event to the CSV file.
+        :param line: line from JSON file
+        :param generic_event: generic event
+        :return: None
+        """
         record = msgspec.json.decode(line, type=PullRequestReviewEvent)
         self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event, record.payload.review.id))
         p = record.payload.review
@@ -121,12 +148,24 @@ class JSONToCSVConverter:
         self.write_pull_request_tuple(record.payload.pull_request, record.payload.action)
 
     def write_pull_request_event(self, line: bytes, generic_event: GenericEvent):
+        """
+        Write a pull request event to the CSV file.
+        :param line: line from JSON file
+        :param generic_event: generic event
+        :return: None
+        """
         record = msgspec.json.decode(line, type=PullRequestEvent)
         self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event, record.payload.pull_request.id))
         pr = record.payload.pull_request
         self.write_pull_request_tuple(pr, record.payload.action)
 
     def write_issue_comment_event(self, line: bytes, generic_event: GenericEvent):
+        """
+        Write an issue comment event to the CSV file.
+        :param line: line from JSON file
+        :param generic_event: generic event
+        :return: None
+        """
         record = orjson.loads(line)
         c = record['payload']['comment']
         comment_id = c['id']
@@ -141,6 +180,11 @@ class JSONToCSVConverter:
                                             c['created_at'], c['updated_at'], c.get('author_association'), c['body'], *self.reactions(c), app))
 
     def issue_event_tuple(self, record):
+        """
+        Return a tuple of values for an issue event.
+        :param record: JSON record
+        :return: tuple of values
+        """
         i = record['payload']['issue']
         assignee = i.get('assignee')['id'] if i['assignee'] else None
         milestone = i['milestone']['id'] if i['milestone'] else None
@@ -155,6 +199,12 @@ class JSONToCSVConverter:
                 *self.reactions(i), app, i.get('state_reason'))
 
     def write_issues_event(self, line: bytes, generic_event: GenericEvent):
+        """
+        Write an issues event to the CSV file.
+        :param line: line from JSON file
+        :param generic_event: generic event
+        :return: None
+        """
         record = orjson.loads(line)
         issue_id = record['payload']['issue']['id']
         self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event, issue_id))
@@ -163,6 +213,12 @@ class JSONToCSVConverter:
             self.writer.writers['issue'].writerow(self.issue_event_tuple(record))
 
     def write_create_event(self, line: bytes, generic_event: GenericEvent):
+        """
+        Write a create event to the CSV file.
+        :param line: line from JSON file
+        :param generic_event: generic event
+        :return: None
+        """
         record = msgspec.json.decode(line, type=CreateEvent)
         self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event))
         ref = record.payload.ref[:127] if record.payload.ref else None
@@ -171,6 +227,12 @@ class JSONToCSVConverter:
                                            record.payload.pusher_type))
 
     def write_fork_event(self, line: bytes, generic_event: GenericEvent):
+        """
+        Write a fork event to the CSV file.
+        :param line: line from JSON file
+        :param generic_event: generic event
+        :return: None
+        """
         record = msgspec.json.decode(line, type=ForkEvent)
         f = record.payload.forkee
         license_key = f.license.key if f.license else None
@@ -191,6 +253,12 @@ class JSONToCSVConverter:
                                          license_name, license_spdx_id))
 
     def write_member_event(self, line: bytes, generic_event: GenericEvent):
+        """
+        Write a member event to the CSV file.
+        :param line: line from JSON file
+        :param generic_event: generic event
+        :return: None
+        """
         record = msgspec.json.decode(line, type=MemberEvent)
         self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event))
         self.writer.writers['memberevent'].writerow((generic_event.id, record.payload.member.id,
@@ -199,6 +267,12 @@ class JSONToCSVConverter:
                                            record.payload.action))
 
     def write_gollum_event(self, line: bytes, generic_event: GenericEvent):
+        """
+        Write a gollum event to the CSV file.
+        :param line: line from JSON file
+        :param generic_event: generic event
+        :return: None
+        """
         record = msgspec.json.decode(line, type=GollumEvent)
         self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event))
         for page in record.payload.pages:
@@ -206,12 +280,24 @@ class JSONToCSVConverter:
                 (generic_event.id, page.page_name[:255], page.title[:255], page.summary, page.action, page.sha))
 
     def write_delete_event(self, line: bytes, generic_event: GenericEvent):
+        """
+        Write a delete event to the CSV file.
+        :param line: line from JSON file
+        :param generic_event: generic event
+        :return: None
+        """
         record = msgspec.json.decode(line, type=DeleteEvent)
         self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event))
         self.writer.writers['deleteevent'].writerow((generic_event.id, record.payload.ref[:255], record.payload.ref_type,
                                            record.payload.pusher_type))
 
     def write_release_event(self, line: bytes, generic_event: GenericEvent):
+        """
+        Write a release event to the CSV file.
+        :param line: line from JSON file
+        :param generic_event: generic event
+        :return: None
+        """
         record = msgspec.json.decode(line, type=ReleaseEvent)
         release = record.payload.release
         self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event, release.id))
@@ -220,6 +306,12 @@ class JSONToCSVConverter:
                                             release.created_at, release.published_at, release.body))
 
     def write_push_event(self, record: PushEvent, generic_event: GenericEvent):
+        """
+        Write a push event to the CSV file.
+        :param record: line from JSON file
+        :param generic_event: generic event
+        :return: None
+        """
         self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event, record.payload.push_id))
         self.writer.writers['pushevent'].writerow((record.payload.push_id, record.payload.size,
                                          record.payload.distinct_size, record.payload.ref[:255],
@@ -230,6 +322,12 @@ class JSONToCSVConverter:
                                           commit.distinct))
 
     def write_commit_comment_event(self, line: bytes, generic_event: GenericEvent):
+        """
+        Write a commit comment event to the CSV file.
+        :param line: line from JSON file
+        :param generic_event: generic event
+        :return: None
+        """
         record = msgspec.json.decode(line, type=CommitCommentEvent)
         c = record.payload.comment
         path = c.path[:255] if c.path else None
@@ -238,16 +336,32 @@ class JSONToCSVConverter:
                                                   path, c.commit_id, c.author_association, c.body))
 
     def write_generic_event(self, generic_event: GenericEvent):
+        """
+        Write a generic event to the CSV file.
+        :param generic_event: generic event
+        :return: None
+        """
         self.writer.writers['archive'].writerow(self.generic_event_tuple(generic_event))
 
     def reactions(self, record):
+        """
+        Get reactions from a record.
+        :param record: record to get reactions from
+        :return: tuple of reactions
+        """
         reactions = record.get('reactions')
         if reactions:
-            return reactions['total_count'], reactions['+1'], reactions['-1'], reactions['laugh'], reactions['hooray'], \
+            return reactions['total_count'], reactions['+1'], reactions['-1'], reactions['laugh'], reactions['hooray'],\
                    reactions['confused'], reactions['heart'], reactions['rocket'], reactions['eyes']
         return None, None, None, None, None, None, None, None, None
 
     def generic_event_tuple(self, record: GenericEvent, payload_id=None) -> tuple:
+        """
+        Get a tuple of generic event data.
+        :param record: record to get data from
+        :param payload_id: payload id to use
+        :return: tuple of generic event data
+        """
         org_id = record.org.id if record.org else None
         org_login = record.org.login if record.org else None
         return (record.id, record.type, record.actor.id, record.actor.login, record.repo.id,
@@ -255,6 +369,10 @@ class JSONToCSVConverter:
                 org_id, org_login)
 
     def reset_added_sets(self):
+        """
+        Reset the added sets.
+        :return: None
+        """
         self.added_ids = set()
         self.added_pushes = set()
         self.added_issues = set()

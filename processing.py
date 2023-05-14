@@ -22,6 +22,10 @@ class Processing:
         self.filename = filename
 
     def add_commit_details(self):
+        """
+        Add commit details to a csv file.
+        :return: None
+        """
         df = pd.read_csv(self.filename)
         seen = dict()
         if not ('repo_name' in df.columns and 'sha' in df.columns):
@@ -37,6 +41,10 @@ class Processing:
         df.to_csv(self.filename, index=False)
 
     def add_user_details(self):
+        """
+        Add user details to a csv file.
+        :return: None
+        """
         df = pd.read_csv(self.filename)
         seen = dict()
         if not ('actor_login' in df.columns):
@@ -54,6 +62,10 @@ class Processing:
         df.to_csv(self.filename, index=False)
 
     def clone_repos(self):
+        """
+        Clone repos appearing in csv file.
+        :return: None
+        """
         if not os.path.exists(self.repo_path):
             os.mkdir(self.repo_path)
         if not os.path.isdir(self.repo_path):
@@ -71,9 +83,19 @@ class Processing:
                 self.clone_repo(d['repo_name'])
 
     def clone_repo(self, repo_name):
+        """
+        Clone a singe repo.
+        :param repo_name: name of the repo to clone.
+        :return: None
+        """
         subprocess.run(['git', '-C', self.repo_path, 'clone', f'https://github.com/{repo_name}.git'])
 
     def fetch_user_details(self, username):
+        """
+        Fetch user details like bio, location, blog, company from GitHub API.
+        :param username: username of the user to fetch details for.
+        :return: user details
+        """
         url = f'https://api.github.com/users/{username}'
         response = requests.get(url, headers=self.headers)
         if response.status_code == 200:
@@ -96,6 +118,12 @@ class Processing:
         return user_details
     
     def fetch_commit_details(self, repo, sha):
+        """
+        Fetch commit details from GitHub API in JSON format.
+        :param repo: the repo name in the format "owner/repo"
+        :param sha: the commit sha
+        :return: commit details in JSON format
+        """
         url = f'https://api.github.com/repos/{repo}/commits/{sha}'
         response = requests.get(url, headers=self.headers)
         if response.status_code == 200 and 'files' in response.json():
@@ -119,6 +147,11 @@ class Processing:
         return commit_details
     
     def add_country_details(self):
+        """
+        Add country details to a csv file. This function uses the Nominatim API to get the country alpha_2 code from
+        the location string.
+        :return: None
+        """
         df = pd.read_csv(self.filename)
         if not ('location' in df.columns):
             print('File must have column "location". Run with option --add-user-details first.')

@@ -1,3 +1,6 @@
+-- indices to speed up common queries. gets executed with option `-i`. only run after you are done 
+-- adding data to the database.
+
 ALTER TABLE archive ADD PRIMARY KEY (id);
 create index archive_actor_login_idx on archive (actor_login);
 create index archive_repo_name_idx on archive (repo_name);

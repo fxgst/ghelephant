@@ -23,11 +23,19 @@ class DatabaseLink:
         self.conn.close()
 
     def create_tables(self):
+        """
+        Create tables in the database.
+        :return: None
+        """
         with open('sql/create_tables.sql', 'r') as f:
             self.cursor.execute(f.read())
         self.conn.commit()
 
     def create_indices(self):
+        """
+        Create indices in the database.
+        :return: None
+        """
         logging.info('Creating indices')
         with open('sql/create_indices.sql', 'r') as f:
             self.cursor.execute(f.read())
@@ -35,6 +43,11 @@ class DatabaseLink:
         logging.info('Finished creating indices')
 
     def insert_csvs_into_db(self, date):
+        """
+        Insert CSV files into the database.
+        :param date: the date of the files to be inserted, corresponds to file name
+        :return: None
+        """
         for table in CSVWriters.file_names:
             query = f"COPY {table} FROM '{data_path}/{table}-{date}.csv' WITH (FORMAT csv)"
             try:

@@ -1,6 +1,5 @@
 import requests
 import os
-import gzip
 import logging
 import datetime
 from variables import data_path
@@ -24,16 +23,28 @@ class Manager:
         self.written_queue = Queue(maxsize=2)
 
     def run_download(self):
+        """
+        Run the download process. Blocks when queue is empty/full.
+        :return: None
+        """
         while date := next(self.dates_to_download, None):
             self.download_json(date)
         self.downloaded_queue.put(None)
 
     def run_decompress(self):
+        """
+        Run the decompression process. Blocks when queue is empty/full.
+        :return: None
+        """
         while date := self.downloaded_queue.get():
             self.decompress_json(date)
         self.decompressed_queue.put(None)
 
     def run_write_csvs(self):
+        """
+        Run the csv writing process. Blocks when queue is empty/full.
+        :return: None
+        """
         with DatabaseLink() as db:
             db.create_tables()
 
@@ -54,6 +65,10 @@ class Manager:
         self.written_queue.put(None)      
 
     def run_copy_into_database(self):
+        """
+        Run the copy into database process. Blocks when queue is empty/full.
+        :return: None
+        """
         while date := self.written_queue.get():
             logging.info(f'Copying {date} into database')
             with DatabaseLink() as db:
@@ -61,6 +76,11 @@ class Manager:
             self.remove_inserted_csvs(date)
 
     def download_json(self, date_to_download):
+        """
+        Download the json file for the given date.
+        :param date_to_download: date to download
+        :return: None
+        """
         path = f'{data_path}/{date_to_download}'
         if os.path.isfile(f'{path}.json'):
             return
@@ -74,6 +94,11 @@ class Manager:
         self.downloaded_queue.put(date_to_download)
 
     def decompress_json(self, date_to_download):
+        """
+        Decompress the json file for the given date.
+        :param date_to_download: date to decompress
+        :return: None
+        """
         path = f'{data_path}/{date_to_download}'
         if os.path.isfile(f'{path}.json'):
             return
@@ -82,6 +107,10 @@ class Manager:
         self.decompressed_queue.put(date_to_download)
 
     def __dates_to_download(self):
+        """
+        Create an iterator of dates to download.
+        :return: iterator of dates to download
+        """
         dates_to_download = []
         start_date = datetime.date(self.start_year, self.start_month, self.start_day)
         end_date = datetime.date(self.end_year, self.end_month, self.end_day)
@@ -95,9 +124,19 @@ class Manager:
 
     @staticmethod
     def remove_json(date_to_download):
+        """
+        Remove the json file for the given date.
+        :param date_to_download: date to remove
+        :return: None
+        """
         path = f'{data_path}/{date_to_download}'
         os.remove(f'{path}.json')
 
     @staticmethod
     def remove_inserted_csvs(day):
+        """
+        Remove the csv files for the given day.
+        :param day: day to remove
+        :return: None
+        """
         os.system(f'rm {data_path}/*-{day}.csv')
