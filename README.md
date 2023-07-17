@@ -2,6 +2,7 @@
 
 GH Elephant is a tool to download GitHub activity data from the [GitHub Archive](https://www.gharchive.org/) 
 and store it in a PostgreSQL database for further analysis.
+For the full reference and a concrete use case of GH Elephant, see the [Master's thesis](https://doi.org/10.3929/ethz-b-000612634) for which GH Elephant was created.
 
 ## Installation
 * `pip3 install -r requirements.txt`
