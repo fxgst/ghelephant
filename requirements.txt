@@ -4,3 +4,6 @@ orjson
 msgspec
 pandas
 tqdm
+pycountry
+geopy
+
