@@ -1,8 +1,8 @@
 import psycopg2
 import os
+import platform
 import logging
 import traceback
-from variables import *
 from csv_writers import CSVWriters
 from psycopg2.errors import CharacterNotInRepertoire
 
@@ -11,10 +11,16 @@ class DatabaseLink:
     """
     Class to link to the database and perform operations on it.
     """
-    def __init__(self):
-        self.conn = psycopg2.connect(database=database_name, user=database_user,
-            password=database_password, host=database_host, port=database_port)
+    def __init__(self,username="ghelephant", password="ghelephant", database="ghelephant", host="localhost", port=5432, data_path=".", sed_name=None):
+        self.conn = psycopg2.connect(database=database, user=username,
+            password=password, host=host, port=port)
         self.cursor = self.conn.cursor()
+        self.data_path = data_path
+        os_name = platform.system()
+        if sed_name is None:
+            self.sed_name = 'sed' if os_name == 'Linux' else 'gsed'
+        else:
+            self.sed_name = sed_name
 
     def __enter__(self):
         self.__init__()
@@ -52,13 +58,13 @@ class DatabaseLink:
         :return: None
         """
         for table in CSVWriters.file_names:
-            query = f"COPY {table} FROM '{data_path}/{table}-{date}.csv' WITH (FORMAT csv)"
+            query = f"COPY {table} FROM '{self.data_path}/{table}-{date}.csv' WITH (FORMAT csv)"
             try:
                 self.cursor.execute(query)
             except CharacterNotInRepertoire:
                 self.conn.rollback()
                 logging.warn(f'Illegal character in table {table} for {date}, removing null bytes and retrying')
-                os.system(f"{sed_name} -i 's/\\x00//g' {data_path}/{table}-{date}.csv")
+                os.system(f"{self.sed_name} -i 's/\\x00//g' {self.data_path}/{table}-{date}.csv")
                 logging.info(f'Removed null bytes from {table}')
                 self.cursor.execute(query)
             except Exception:

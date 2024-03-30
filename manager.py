@@ -2,7 +2,6 @@ import requests
 import os
 import logging
 import datetime
-from variables import data_path
 from queue import Queue  
 from json_to_csv_converter import JSONToCSVConverter
 from csv_writers import CSVWriters
@@ -13,7 +12,9 @@ class Manager:
     """
     Class to manage the download, decompression, and writing of data.
     """
-    def __init__(self, start_year, start_month, start_day, end_year, end_month, end_day):
+    def __init__(self, start_year, start_month, start_day, end_year, end_month, end_day, data_path, sed_name
+        database_username, database_password, database_name, database_host, database_port):
+
         self.start_year = start_year
         self.start_month = start_month
         self.start_day = start_day
@@ -24,6 +25,16 @@ class Manager:
         self.downloaded_queue = Queue(maxsize=30)
         self.decompressed_queue = Queue(maxsize=30)
         self.written_queue = Queue(maxsize=2)
+        self.data_path = data_path
+        self.sed_name = sed_name
+
+        self.DATABASE_USERNAME = database_username
+        self.DATABASE_PASSWORD = database_password
+        self.DATABASE_NAME = database_name
+        self.DATABASE_HOST = database_host
+        self.DATABASE_PORT = database_port
+
+
 
     def run_download(self):
         """
@@ -48,7 +59,8 @@ class Manager:
         Run the csv writing process. Blocks when queue is empty/full.
         :return: None
         """
-        with DatabaseLink() as db:
+        with DatabaseLink(username=self.DATABASE_USERNAME, self.password=self.DATABASE_PASSWORD, 
+            database=self.DATABASE_NAME, host=self.DATABASE_HOST, port=self.DATABASE_PORT, sed_name=self.sed_name) as db:
             db.create_tables()
 
         converter = JSONToCSVConverter(writer=None)
@@ -57,7 +69,7 @@ class Manager:
             # at the first of the month, reset sets to not use too much memory
             if date[-5:] == '01-23':
                 converter.reset_added_sets()
-            file_name = f'{data_path}/{date}.json'
+            file_name = f'{self.data_path}/{date}.json'
             logging.info(f'Writing csv for {date}')
             with open(file_name, 'rb') as f:
                 converter.write_events(f)
@@ -74,7 +86,8 @@ class Manager:
         """
         while date := self.written_queue.get():
             logging.info(f'Copying {date} into database')
-            with DatabaseLink() as db:
+            with DatabaseLink(username=self.DATABASE_USERNAME, password=self.DATABASE_PASSWORD, 
+                database=self.DATABASE_NAME, host=self.DATABASE_HOST, port=self.DATABASE_PORT, sed_name=self.sed_name) as db:
                 db.insert_csvs_into_db(date)
             self.remove_inserted_csvs(date)
 
@@ -84,7 +97,7 @@ class Manager:
         :param date_to_download: date to download
         :return: None
         """
-        path = f'{data_path}/{date_to_download}'
+        path = f'{self.data_path}/{date_to_download}'
         if os.path.isfile(f'{path}.json'):
             return
         logging.info(f'Downloading {date_to_download}')
@@ -102,7 +115,7 @@ class Manager:
         :param date_to_download: date to decompress
         :return: None
         """
-        path = f'{data_path}/{date_to_download}'
+        path = f'{self.data_path}/{date_to_download}'
         if os.path.isfile(f'{path}.json'):
             return
         logging.info(f'Decompressing {date_to_download}')
@@ -132,7 +145,7 @@ class Manager:
         :param date_to_download: date to remove
         :return: None
         """
-        path = f'{data_path}/{date_to_download}'
+        path = f'{self.data_path}/{date_to_download}'
         os.remove(f'{path}.json')
 
     @staticmethod
@@ -142,4 +155,4 @@ class Manager:
         :param day: day to remove
         :return: None
         """
-        os.system(f'rm {data_path}/*-{day}.csv')
+        os.system(f'rm {self.data_path}/*-{day}.csv')

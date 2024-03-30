@@ -7,6 +7,23 @@ from manager import Manager
 from database_link import DatabaseLink
 from processing import Processing
 
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+
+if os.path.isfile(".env"):
+    load_dotenv()
+
+# Get environment variables
+DATABASE_USERNAME = os.getenv("DATABASE_USERNAME")
+DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
+DATABASE_NAME = os.getenv("DATABASE_NAME")
+DATABASE_HOST = os.getenv("DATABASE_HOST")
+DATABASE_PORT = os.getenv("DATABASE_PORT")
+DATA_PATH = os.getenv("DATA_PATH", ".")
+SED_NAME = os.getenv("SED_NAME", None)
+
 
 def main():
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
@@ -36,7 +53,8 @@ def main():
     args = parser.parse_args()
 
     if args.create_indices:
-        with DatabaseLink() as db:
+        with DatabaseLink(username=DATABASE_USERNAME, password=DATABASE_PASSWORD, 
+            database=DATABASE_NAME, host=DATABASE_HOST, port=DATABASE_PORT, sed_name=SED_NAME) as db:
             db.create_indices()
 
     elif args.start_date and args.end_date:
@@ -44,7 +62,10 @@ def main():
         end_year, end_month, end_day = args.end_date.split('-')
         assert int(start_year) >= 2015, 'Start year must be 2015 or later.'
         manager = Manager(start_year=int(start_year), start_month=int(start_month), start_day=int(start_day),
-                            end_year=int(end_year), end_month=int(end_month), end_day=int(end_day))
+                            end_year=int(end_year), end_month=int(end_month), end_day=int(end_day),
+                            data_path=DATA_PATH, sed_name=SED_NAME,
+                            database_username=DATABASE_USERNAME, database_password=DATABASE_PASSWORD,
+                            database_name=DATABASE_NAME, database_host=DATABASE_HOST, database_port=DATABASE_PORT)
         downloading_thread = threading.Thread(target=manager.run_download, name='downloadingThread')
         downloading_thread.start()
         decompressing_thread = threading.Thread(target=manager.run_decompress, name='decompressingThread')
