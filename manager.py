@@ -59,8 +59,9 @@ class Manager:
         Run the csv writing process. Blocks when queue is empty/full.
         :return: None
         """
-        with DatabaseLink(username=self.DATABASE_USERNAME, password=self.DATABASE_PASSWORD, 
-            database=self.DATABASE_NAME, host=self.DATABASE_HOST, port=self.DATABASE_PORT, sed_name=self.sed_name) as db:
+        with DatabaseLink(username=self.DATABASE_USERNAME, password=self.DATABASE_PASSWORD,
+            database=self.DATABASE_NAME, host=self.DATABASE_HOST, port=self.DATABASE_PORT,
+            sed_name=self.sed_name, data_path=self.data_path) as db:
             db.create_tables()
 
         converter = JSONToCSVConverter(writer=None)
@@ -86,8 +87,9 @@ class Manager:
         """
         while date := self.written_queue.get():
             logging.info(f'Copying {date} into database')
-            with DatabaseLink(username=self.DATABASE_USERNAME, password=self.DATABASE_PASSWORD, 
-                database=self.DATABASE_NAME, host=self.DATABASE_HOST, port=self.DATABASE_PORT, sed_name=self.sed_name) as db:
+            with DatabaseLink(username=self.DATABASE_USERNAME, password=self.DATABASE_PASSWORD,
+                database=self.DATABASE_NAME, host=self.DATABASE_HOST, port=self.DATABASE_PORT,
+                data_path=self.data_path, sed_name=self.sed_name) as db:
                 db.insert_csvs_into_db(date)
             self.remove_inserted_csvs(date)
 
@@ -138,8 +140,7 @@ class Manager:
         dates_to_download.reverse()
         return iter(dates_to_download)
 
-    @staticmethod
-    def remove_json(date_to_download):
+    def remove_json(self, date_to_download):
         """
         Remove the json file for the given date.
         :param date_to_download: date to remove
@@ -148,8 +149,7 @@ class Manager:
         path = f'{self.data_path}/{date_to_download}'
         os.remove(f'{path}.json')
 
-    @staticmethod
-    def remove_inserted_csvs(day):
+    def remove_inserted_csvs(self, day):
         """
         Remove the csv files for the given day.
         :param day: day to remove
