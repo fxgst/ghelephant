@@ -65,7 +65,7 @@ class Manager:
 
         converter = JSONToCSVConverter(writer=None)
         while date := self.decompressed_queue.get():
-            converter.writer = CSVWriters(date)
+            converter.writer = CSVWriters(date, self.data_path)
             # at the first of the month, reset sets to not use too much memory
             if date[-5:] == '01-23':
                 converter.reset_added_sets()
