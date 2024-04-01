@@ -52,8 +52,13 @@ def main():
                              '"location" to the csv file.')
     args = parser.parse_args()
 
+
+    if not os.path.isdir(DATA_PATH):
+        os.mkdir(DATA_PATH)
+
+
     if args.create_indices:
-        with DatabaseLink(username=DATABASE_USERNAME, password=DATABASE_PASSWORD, 
+        with DatabaseLink(username=DATABASE_USERNAME, password=DATABASE_PASSWORD,
             database=DATABASE_NAME, host=DATABASE_HOST, port=DATABASE_PORT, sed_name=SED_NAME) as db:
             db.create_indices()
 
@@ -74,11 +79,11 @@ def main():
         writing_thread.start()
         copying_thread = threading.Thread(target=manager.run_copy_into_database, name='copyingThread')
         copying_thread.start()
-    
+
     elif args.add_commit_details:
         processing = Processing(filename=args.add_commit_details, auth_token=args.token)
         processing.add_commit_details()
-    
+
     elif args.add_user_details:
         processing = Processing(filename=args.add_user_details, auth_token=args.token)
         processing.add_user_details()

@@ -12,7 +12,7 @@ class Manager:
     """
     Class to manage the download, decompression, and writing of data.
     """
-    def __init__(self, start_year, start_month, start_day, end_year, end_month, end_day, data_path, sed_name
+    def __init__(self, start_year, start_month, start_day, end_year, end_month, end_day, data_path, sed_name,
         database_username, database_password, database_name, database_host, database_port):
 
         self.start_year = start_year
@@ -59,7 +59,7 @@ class Manager:
         Run the csv writing process. Blocks when queue is empty/full.
         :return: None
         """
-        with DatabaseLink(username=self.DATABASE_USERNAME, self.password=self.DATABASE_PASSWORD, 
+        with DatabaseLink(username=self.DATABASE_USERNAME, password=self.DATABASE_PASSWORD, 
             database=self.DATABASE_NAME, host=self.DATABASE_HOST, port=self.DATABASE_PORT, sed_name=self.sed_name) as db:
             db.create_tables()
 

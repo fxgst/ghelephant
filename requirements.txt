@@ -6,4 +6,6 @@ pandas
 tqdm
 pycountry
 geopy
-
+unzip
+sed
+python-dotenv
