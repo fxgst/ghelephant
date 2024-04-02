@@ -4,3 +4,4 @@ orjson
 msgspec
 pandas
 tqdm
+pandas
