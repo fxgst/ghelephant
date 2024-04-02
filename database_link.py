@@ -46,34 +46,36 @@ class DatabaseLink:
         self.conn.commit()
         logging.info('Finished creating indices')
 
-    def insert_csvs_into_db(self, date):
+    def insert_csvs_into_db(self, date, use_pandas=False):
         """
         Insert CSV files into the database.
         :param date: the date of the files to be inserted, corresponds to file name
         :return: None
         """
-        # for table in CSVWriters.file_names:
-        #     query = f"COPY {table} FROM '{data_path}/{table}-{date}.csv' WITH (FORMAT csv)"
-        #     try:
-        #         self.cursor.execute(query)
-        #     except CharacterNotInRepertoire:
-        #         self.conn.rollback()
-        #         logging.warn(f'Illegal character in table {table} for {date}, removing null bytes and retrying')
-        #         os.system(f"{sed_name} -i 's/\\x00//g' {data_path}/{table}-{date}.csv")
-        #         logging.info(f'Removed null bytes from {table}')
-        #         self.cursor.execute(query)
-        #     except Exception:
-        #         self.conn.rollback()
-        #         logging.error(f'Error copying table {table} for {date} into database')
-        #         logging.error(traceback.format_exc())
-        #     self.conn.commit()
-        for table in CSVWriters.file_names:
-            csv_filepath = f'{data_path}/{table}-{date}.csv'
-            try:
-                df = pd.read_csv(csv_filepath)
-                df.to_sql(table, self.conn, if_exists='append')
-            except Exception:
-                self.conn.rollback()
-                logging.error(f'Error copying table {table} for {date} into database')
-                logging.error(traceback.format_exc())                
+        if use_pandas:
+            for table in CSVWriters.file_names:
+                query = f"COPY {table} FROM '{data_path}/{table}-{date}.csv' WITH (FORMAT csv)"
+                try:
+                    self.cursor.execute(query)
+                except CharacterNotInRepertoire:
+                    self.conn.rollback()
+                    logging.warn(f'Illegal character in table {table} for {date}, removing null bytes and retrying')
+                    os.system(f"{sed_name} -i 's/\\x00//g' {data_path}/{table}-{date}.csv")
+                    logging.info(f'Removed null bytes from {table}')
+                    self.cursor.execute(query)
+                except Exception:
+                    self.conn.rollback()
+                    logging.error(f'Error copying table {table} for {date} into database')
+                    logging.error(traceback.format_exc())
+                self.conn.commit()
+        else:
+            for table in CSVWriters.file_names:
+                csv_filepath = f'{data_path}/{table}-{date}.csv'
+                try:
+                    df = pd.read_csv(csv_filepath)
+                    df.to_sql(table, self.conn, if_exists='append')
+                except Exception:
+                    self.conn.rollback()
+                    logging.error(f'Error copying table {table} for {date} into database')
+                    logging.error(traceback.format_exc())                
         logging.info(f'Finished copying {date} into database')
