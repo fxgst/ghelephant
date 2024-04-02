@@ -11,10 +11,17 @@ class DatabaseLink:
     """
     Class to link to the database and perform operations on it.
     """
-    def __init__(self,username="ghelephant", password="ghelephant", database="ghelephant", host="localhost", port=5432, data_path=".", sed_name=None):
+    def __init__(self, username="ghelephant", password="ghelephant", 
+                database="ghelephant", host="localhost", port=5432, 
+                sed_name=None, data_path="."):
         self.conn = psycopg2.connect(database=database, user=username,
             password=password, host=host, port=port)
         self.cursor = self.conn.cursor()
+        self.username = username
+        self.password = password
+        self.database = database
+        self.host = host
+        self.port = port
         self.data_path = data_path
         os_name = platform.system()
         if sed_name is None:
@@ -23,7 +30,9 @@ class DatabaseLink:
             self.sed_name = sed_name
 
     def __enter__(self):
-        self.__init__()
+        self.__init__(username=self.username, password=self.password, 
+                          database=self.database, host=self.host, port=self.port, 
+                          sed_name=self.sed_name, data_path=self.data_path)
         return self
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
