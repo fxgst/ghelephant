@@ -52,7 +52,7 @@ class DatabaseLink:
         :param date: the date of the files to be inserted, corresponds to file name
         :return: None
         """
-        if use_pandas:
+        if not use_pandas:
             for table in CSVWriters.file_names:
                 query = f"COPY {table} FROM '{data_path}/{table}-{date}.csv' WITH (FORMAT csv)"
                 try:
