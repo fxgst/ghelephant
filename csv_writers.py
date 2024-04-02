@@ -1,5 +1,5 @@
 import csv
-from variables import data_path
+# from variables import data_path
 
 
 class CSVWriters:
@@ -10,7 +10,7 @@ class CSVWriters:
             'gollumevent', 'memberevent', 'forkevent', 'createevent', 'issue', 'issuecomment', 'pullrequest',
             'pullrequestreview', 'pullrequestreviewcomment']
 
-    def __init__(self, date):
+    def __init__(self, date, data_path):
         """
         Create a CSV writer for each table/file
         :param date: date of the data to be written
